@@ -19,12 +19,12 @@ import (
 	tinkpb "github.com/google/tink/go/proto/tink_go_proto"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/secretlock"
 
-	mocksecretlock "github.com/trustbloc/kms-crypto-go/mock/secretlock"
-	"github.com/trustbloc/kms-crypto-go/secretlock/noop"
+	mocksecretlock "github.com/trustbloc/kms-go/mock/secretlock"
+	"github.com/trustbloc/kms-go/secretlock/noop"
 )
 
 func TestImportECDSAKeyWithInvalidKey(t *testing.T) {

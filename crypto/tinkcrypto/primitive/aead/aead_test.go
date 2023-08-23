@@ -16,7 +16,7 @@ import (
 	"github.com/google/tink/go/core/registry"
 	"github.com/google/tink/go/keyset"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead"
 )
 
 func Example() {

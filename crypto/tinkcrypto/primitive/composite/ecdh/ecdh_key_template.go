@@ -12,9 +12,9 @@ import (
 	commonpb "github.com/google/tink/go/proto/common_go_proto"
 	tinkpb "github.com/google/tink/go/proto/tink_go_proto"
 
-	cbcaead "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead/subtle"
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	cbcaead "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead/subtle"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
 )
 
 // AEADAlg represents the AEAD implementation algorithm used by ECDH.

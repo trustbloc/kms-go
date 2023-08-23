@@ -16,9 +16,9 @@ import (
 	"github.com/google/tink/go/subtle/random"
 	"golang.org/x/crypto/pbkdf2"
 
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/secretlock"
 
-	cipherutil "github.com/trustbloc/kms-crypto-go/secretlock/local/internal/cipher"
+	cipherutil "github.com/trustbloc/kms-go/secretlock/local/internal/cipher"
 )
 
 // package pbkdf2 provides an pbkdf2 implementation of secretlock as a masterlock.

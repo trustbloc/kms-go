@@ -28,21 +28,21 @@ import (
 	"github.com/google/tink/go/subtle"
 	"github.com/stretchr/testify/require"
 
-	mockstorage "github.com/trustbloc/kms-crypto-go/internal/mock/storage"
+	mockstorage "github.com/trustbloc/kms-go/internal/mock/storage"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/ecdh"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/keyio"
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
-	ariesjose "github.com/trustbloc/kms-crypto-go/doc/jose"
-	"github.com/trustbloc/kms-crypto-go/doc/jose/jwk"
-	resolver "github.com/trustbloc/kms-crypto-go/doc/jose/kidresolver"
-	"github.com/trustbloc/kms-crypto-go/doc/util/jwkkid"
-	"github.com/trustbloc/kms-crypto-go/doc/util/kmsdidkey"
-	mockkms "github.com/trustbloc/kms-crypto-go/mock/kms"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/ecdh"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/keyio"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	ariesjose "github.com/trustbloc/kms-go/doc/jose"
+	"github.com/trustbloc/kms-go/doc/jose/jwk"
+	resolver "github.com/trustbloc/kms-go/doc/jose/kidresolver"
+	"github.com/trustbloc/kms-go/doc/util/jwkkid"
+	"github.com/trustbloc/kms-go/doc/util/kmsdidkey"
+	mockkms "github.com/trustbloc/kms-go/mock/kms"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
+	"github.com/trustbloc/kms-go/spi/kms"
 )
 
 const (

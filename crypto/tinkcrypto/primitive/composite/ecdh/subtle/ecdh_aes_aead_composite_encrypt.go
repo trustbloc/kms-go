@@ -9,8 +9,8 @@ package subtle
 import (
 	"fmt"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/api"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/api"
 )
 
 // ECDHAEADCompositeEncrypt is an instance of ECDH-ES encryption with Concat KDF

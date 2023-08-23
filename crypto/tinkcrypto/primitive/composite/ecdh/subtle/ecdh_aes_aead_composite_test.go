@@ -20,7 +20,7 @@ import (
 	"github.com/google/tink/go/tink"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
 )
 
 func TestEncryptDecrypt(t *testing.T) {

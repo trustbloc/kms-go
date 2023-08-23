@@ -15,12 +15,12 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	commonpb "github.com/google/tink/go/proto/common_go_proto"
 
-	afgocrypto "github.com/trustbloc/kms-crypto-go/crypto"
-	"github.com/trustbloc/kms-crypto-go/doc/util/fingerprint"
-	"github.com/trustbloc/kms-crypto-go/doc/util/jwkkid"
+	afgocrypto "github.com/trustbloc/kms-go/crypto"
+	"github.com/trustbloc/kms-go/doc/util/fingerprint"
+	"github.com/trustbloc/kms-go/doc/util/jwkkid"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
+	"github.com/trustbloc/kms-go/spi/kms"
 )
 
 // keyTypeCodecs maps kms.KeyType to did:key codec.

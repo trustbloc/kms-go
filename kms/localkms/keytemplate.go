@@ -17,11 +17,11 @@ import (
 	tinkpb "github.com/google/tink/go/proto/tink_go_proto"
 	"github.com/google/tink/go/signature"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/bbs"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/ecdh"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/secp256k1"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/bbs"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/ecdh"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/secp256k1"
 )
 
 // nolint:gocyclo,funlen

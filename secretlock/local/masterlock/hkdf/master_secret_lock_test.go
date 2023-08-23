@@ -14,7 +14,7 @@ import (
 	"github.com/google/tink/go/subtle/random"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/secretlock"
 )
 
 func TestMasterLock(t *testing.T) {

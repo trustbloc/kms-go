@@ -12,10 +12,10 @@ package localkms
 import (
 	tinkpb "github.com/google/tink/go/proto/tink_go_proto"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/kms"
 
-	clbld "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/cl/blinder"
-	clsgn "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/cl/signer"
+	clbld "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/cl/blinder"
+	clsgn "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/cl/signer"
 )
 
 // getKeyTemplate returns tink KeyTemplate associated with the provided keyType.

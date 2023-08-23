@@ -26,16 +26,16 @@ import (
 	"github.com/google/tink/go/subtle/random"
 	"golang.org/x/crypto/curve25519"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead/subtle"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/api"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/ecdh"
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
-	"github.com/trustbloc/kms-crypto-go/doc/jose/jwk"
-	"github.com/trustbloc/kms-crypto-go/util/cryptoutil"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead/subtle"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/api"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/ecdh"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	"github.com/trustbloc/kms-go/doc/jose/jwk"
+	"github.com/trustbloc/kms-go/util/cryptoutil"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 )
 
 // EncAlg represents the JWE content encryption algorithm.

@@ -17,16 +17,16 @@ import (
 	"github.com/google/tink/go/aead"
 	"github.com/google/tink/go/keyset"
 
-	kmsapi "github.com/trustbloc/kms-crypto-go/spi/kms"
+	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/secretlock"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/primitive/bbs12381g2pub"
-	"github.com/trustbloc/kms-crypto-go/doc/util/jwkkid"
-	"github.com/trustbloc/kms-crypto-go/kms"
-	"github.com/trustbloc/kms-crypto-go/kms/localkms/internal/keywrapper"
+	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
+	"github.com/trustbloc/kms-go/doc/util/jwkkid"
+	"github.com/trustbloc/kms-go/kms"
+	"github.com/trustbloc/kms-go/kms/localkms/internal/keywrapper"
 )
 
 const (

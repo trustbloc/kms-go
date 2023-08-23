@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package crypto
 
 import (
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 )
 
 // SignFunc mocks Crypto's Sign() function, it's useful for executing custom signing with the help of SignKey.

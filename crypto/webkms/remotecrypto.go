@@ -21,14 +21,14 @@ import (
 	"github.com/bluele/gcache"
 	"github.com/google/tink/go/keyset"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
 	"github.com/hyperledger/aries-framework-go/component/log"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/keyio"
-	webkmsimpl "github.com/trustbloc/kms-crypto-go/kms/webkms"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/keyio"
+	webkmsimpl "github.com/trustbloc/kms-go/kms/webkms"
 
-	spi "github.com/trustbloc/kms-crypto-go/spi/log"
+	spi "github.com/trustbloc/kms-go/spi/log"
 )
 
 var logger = log.New("aries-framework/crypto/webkms")

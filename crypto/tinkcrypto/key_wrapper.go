@@ -20,13 +20,13 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 	"golang.org/x/crypto/curve25519"
 
-	"github.com/trustbloc/kms-crypto-go/util/cryptoutil"
+	"github.com/trustbloc/kms-go/util/cryptoutil"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead/subtle"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/keyio"
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead/subtle"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/keyio"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
 )
 
 const defKeySize = 32

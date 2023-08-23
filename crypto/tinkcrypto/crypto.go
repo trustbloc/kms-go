@@ -22,10 +22,10 @@ import (
 	"github.com/google/tink/go/signature"
 	"golang.org/x/crypto/chacha20poly1305"
 
-	"github.com/trustbloc/kms-crypto-go/spi/crypto"
+	"github.com/trustbloc/kms-go/spi/crypto"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead/subtle"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/bbs"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead/subtle"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/bbs"
 )
 
 const (

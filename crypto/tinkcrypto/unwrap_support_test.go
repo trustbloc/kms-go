@@ -23,9 +23,9 @@ import (
 	"github.com/google/tink/go/testutil"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/util/cryptoutil"
+	"github.com/trustbloc/kms-go/util/cryptoutil"
 
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
 )
 
 func Test_ExtractPrivKey(t *testing.T) {

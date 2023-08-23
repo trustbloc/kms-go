@@ -11,7 +11,7 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/doc/util/fingerprint"
+	"github.com/trustbloc/kms-go/doc/util/fingerprint"
 )
 
 func TestCreateDIDKey(t *testing.T) {

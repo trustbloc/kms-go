@@ -18,10 +18,10 @@ import (
 	"github.com/google/tink/go/subtle/random"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/secretlock"
 
-	"github.com/trustbloc/kms-crypto-go/secretlock/local/masterlock/hkdf"
-	"github.com/trustbloc/kms-crypto-go/secretlock/local/masterlock/pbkdf2"
+	"github.com/trustbloc/kms-go/secretlock/local/masterlock/hkdf"
+	"github.com/trustbloc/kms-go/secretlock/local/masterlock/pbkdf2"
 )
 
 const (

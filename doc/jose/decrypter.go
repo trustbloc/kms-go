@@ -15,16 +15,16 @@ import (
 
 	"github.com/google/tink/go/keyset"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/api"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/ecdh"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/keyio"
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
-	"github.com/trustbloc/kms-crypto-go/doc/jose/jwk"
-	resolver "github.com/trustbloc/kms-crypto-go/doc/jose/kidresolver"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/api"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/ecdh"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/keyio"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	"github.com/trustbloc/kms-go/doc/jose/jwk"
+	resolver "github.com/trustbloc/kms-go/doc/jose/kidresolver"
 
-	cryptoapi "github.com/trustbloc/kms-crypto-go/spi/crypto"
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
+	"github.com/trustbloc/kms-go/spi/kms"
 )
 
 // Decrypter interface to Decrypt JWE messages.

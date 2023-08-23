@@ -13,9 +13,9 @@ import (
 
 	"github.com/google/tink/go/subtle/random"
 
-	kmsapi "github.com/trustbloc/kms-crypto-go/spi/kms"
+	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/kms"
+	"github.com/trustbloc/kms-go/kms"
 )
 
 const maxKeyIDLen = 50

@@ -15,11 +15,11 @@ import (
 	"github.com/google/tink/go/testkeyset"
 	"github.com/google/tink/go/testutil"
 
-	kmsservice "github.com/trustbloc/kms-crypto-go/kms"
+	kmsservice "github.com/trustbloc/kms-go/kms"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
-	"github.com/trustbloc/kms-crypto-go/spi/storage"
+	"github.com/trustbloc/kms-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/storage"
 )
 
 // KeyManager mocks a local Key Management Service + ExportableKeyManager.
