@@ -15,11 +15,11 @@ import (
 	"github.com/google/tink/go/keyset"
 	"github.com/stretchr/testify/require"
 
-	mockstorage "github.com/trustbloc/kms-crypto-go/internal/mock/storage"
+	mockstorage "github.com/trustbloc/kms-go/internal/mock/storage"
 
-	kmsapi "github.com/trustbloc/kms-crypto-go/spi/kms"
+	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/kms"
+	"github.com/trustbloc/kms-go/kms"
 )
 
 func TestLocalKMS_Ursa_Success(t *testing.T) {

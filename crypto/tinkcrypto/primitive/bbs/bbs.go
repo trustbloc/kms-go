@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
 //
 //	     "github.com/google/tink/go/keyset"
 //
-//	     "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/bbs"
+//	     "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/bbs"
 //	 )
 //
 //	 func main() {

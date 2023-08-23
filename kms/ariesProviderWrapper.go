@@ -10,8 +10,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
-	"github.com/trustbloc/kms-crypto-go/spi/storage"
+	"github.com/trustbloc/kms-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/storage"
 )
 
 // AriesWrapperStoreName is the store name used when creating a KMS store using kms.NewAriesProviderWrapper.

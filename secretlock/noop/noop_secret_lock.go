@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package noop
 
 import (
-	"github.com/trustbloc/kms-crypto-go/spi/secretlock"
+	"github.com/trustbloc/kms-go/spi/secretlock"
 )
 
 // package noop provides a noop secret lock service. This allows for quick testing of key storage using the KMS. Keys

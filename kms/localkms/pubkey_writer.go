@@ -21,13 +21,13 @@ import (
 	tinkpb "github.com/google/tink/go/proto/tink_go_proto"
 	"github.com/google/tink/go/subtle"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite/keyio"
-	bbspb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/bbs_go_proto"
-	clpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/cl_go_proto"
-	secp256k1pb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/secp256k1_go_proto"
-	secp256k1subtle "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/secp256k1/subtle"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/keyio"
+	bbspb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/bbs_go_proto"
+	clpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/cl_go_proto"
+	secp256k1pb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/secp256k1_go_proto"
+	secp256k1subtle "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/secp256k1/subtle"
 )
 
 const (

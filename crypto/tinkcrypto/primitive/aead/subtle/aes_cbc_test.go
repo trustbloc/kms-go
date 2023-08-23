@@ -17,7 +17,7 @@ import (
 	"github.com/google/tink/go/subtle/random"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead/subtle"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead/subtle"
 )
 
 func TestNewAESCBC(t *testing.T) {

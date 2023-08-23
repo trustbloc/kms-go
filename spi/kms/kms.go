@@ -8,7 +8,7 @@
 // KMS instances and the list of key types supported by the service.
 package kms
 
-import "github.com/trustbloc/kms-crypto-go/spi/secretlock"
+import "github.com/trustbloc/kms-go/spi/secretlock"
 
 // KeyManager manages keys and their storage for the aries framework.
 type KeyManager interface {

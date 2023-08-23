@@ -21,9 +21,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 
-	cbcaead "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/aead"
-	"github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/composite"
-	ecdhpb "github.com/trustbloc/kms-crypto-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
+	cbcaead "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/aead"
+	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
+	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
 )
 
 func TestECDHNISTPAESPrivateKeyManager_Primitive(t *testing.T) {

@@ -22,11 +22,11 @@ import (
 	"github.com/go-jose/go-jose/v3"
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/trustbloc/kms-crypto-go/util/cryptoutil"
+	"github.com/trustbloc/kms-go/util/cryptoutil"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
+	"github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/crypto/primitive/bbs12381g2pub"
+	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 )
 
 const (

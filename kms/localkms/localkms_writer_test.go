@@ -15,9 +15,9 @@ import (
 	"github.com/google/tink/go/subtle/random"
 	"github.com/stretchr/testify/require"
 
-	kmsapi "github.com/trustbloc/kms-crypto-go/spi/kms"
+	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 
-	"github.com/trustbloc/kms-crypto-go/kms"
+	"github.com/trustbloc/kms-go/kms"
 )
 
 func TestLocalKMSWriter(t *testing.T) {

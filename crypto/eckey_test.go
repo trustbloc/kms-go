@@ -14,7 +14,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-crypto-go/spi/crypto"
+	"github.com/trustbloc/kms-go/spi/crypto"
 )
 
 func TestToECKey(t *testing.T) {

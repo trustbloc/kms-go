@@ -21,8 +21,8 @@ import (
 
 	"github.com/hyperledger/aries-framework-go/component/log"
 
-	"github.com/trustbloc/kms-crypto-go/spi/kms"
-	spilog "github.com/trustbloc/kms-crypto-go/spi/log"
+	"github.com/trustbloc/kms-go/spi/kms"
+	spilog "github.com/trustbloc/kms-go/spi/log"
 )
 
 const (

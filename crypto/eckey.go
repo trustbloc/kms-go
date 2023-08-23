@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/trustbloc/kms-crypto-go/spi/crypto"
+	"github.com/trustbloc/kms-go/spi/crypto"
 )
 
 // ToECKey converts key to an ecdsa public key. It returns an error if the curve is invalid.

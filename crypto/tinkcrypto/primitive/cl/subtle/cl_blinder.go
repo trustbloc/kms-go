@@ -15,7 +15,7 @@ import (
 
 	"github.com/hyperledger/ursa-wrapper-go/pkg/libursa/ursa"
 
-	"github.com/trustbloc/kms-crypto-go/internal/ursautil"
+	"github.com/trustbloc/kms-go/internal/ursautil"
 )
 
 // CLBlinder is used for blinding CL MasterSecret with arbitrary values.
