@@ -4,7 +4,7 @@
 
 module github.com/trustbloc/kms-go
 
-go 1.20
+go 1.21
 
 require (
 	github.com/IBM/mathlib v0.0.3-0.20230605104224-932ab92f2ce0
