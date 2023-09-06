@@ -1399,7 +1399,7 @@ func bbsVerifyProofPOSTHandle(reqBody []byte, sigKH *keyset.Handle) error {
 }
 
 func TestCloseResponseBody(t *testing.T) {
-	closeResponseBody(&errFailingCloser{}, logger, "testing close fail should log: errFailingCloser always fails")
+	closeResponseBody(&errFailingCloser{}, "testing close fail should log: errFailingCloser always fails")
 }
 
 func nonceSize(ps *primitiveset.PrimitiveSet) int {
@@ -1485,13 +1485,13 @@ func startMockServer(handler http.Handler) net.Listener {
 	// ":0" will make the listener auto assign a free port
 	listener, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
-		logger.Fatalf("HTTP listener failed to start: %s", err)
+		errorLogger.Fatalf("HTTP listener failed to start: %s", err)
 	}
 
 	go func() {
 		err := http.ServeTLS(listener, handler, certPrefix+"ec-pubCert1.pem", certPrefix+"ec-key1.pem")
 		if err != nil && !strings.Contains(err.Error(), "use of closed network connection") {
-			logger.Fatalf("HTTP server failed to start: %s", err)
+			errorLogger.Fatalf("HTTP server failed to start: %s", err)
 		}
 	}()
 

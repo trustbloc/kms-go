@@ -110,7 +110,7 @@ func (b *CryptoBox) Easy(payload, nonce, theirPub []byte, myKID string) ([]byte,
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "Easy")
+	defer closeResponseBody(resp.Body, "Easy")
 
 	err = checkError(resp)
 	if err != nil {
@@ -129,7 +129,7 @@ func (b *CryptoBox) Easy(payload, nonce, theirPub []byte, myKID string) ([]byte,
 		return nil, fmt.Errorf("unmarshal ciphertext for Easy failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall Easy duration: %s", time.Since(easyStart))
+	debugLogger.Printf("overall Easy duration: %s", time.Since(easyStart))
 
 	return httpResp.Ciphertext, nil
 }
@@ -162,7 +162,7 @@ func (b *CryptoBox) EasyOpen(cipherText, nonce, theirPub, myPub []byte) ([]byte,
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "EasyOpen")
+	defer closeResponseBody(resp.Body, "EasyOpen")
 
 	err = checkError(resp)
 	if err != nil {
@@ -181,7 +181,7 @@ func (b *CryptoBox) EasyOpen(cipherText, nonce, theirPub, myPub []byte) ([]byte,
 		return nil, fmt.Errorf("unmarshal plaintext for EasyOpen failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall easyOpen duration: %s", time.Since(easyOpenStart))
+	debugLogger.Printf("overall easyOpen duration: %s", time.Since(easyOpenStart))
 
 	return httpResp.Plaintext, nil
 }
@@ -211,7 +211,7 @@ func (b *CryptoBox) Seal(payload, theirEncPub []byte, randSource io.Reader) ([]b
 	// now seal the msg with the ephemeral key, nonce and recPub (which is recipient's publicKey)
 	ret := box.Seal(epk[:], payload, nonce, &recPubBytes, esk)
 
-	logger.Debugf("overall Seal (non remote call) duration: %s", time.Since(sealStart))
+	debugLogger.Printf("overall Seal (non remote call) duration: %s", time.Since(sealStart))
 
 	return ret, nil
 }
@@ -244,7 +244,7 @@ func (b *CryptoBox) SealOpen(cipherText, myPub []byte) ([]byte, error) {
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "SealOpen")
+	defer closeResponseBody(resp.Body, "SealOpen")
 
 	err = checkError(resp)
 	if err != nil {
@@ -263,7 +263,7 @@ func (b *CryptoBox) SealOpen(cipherText, myPub []byte) ([]byte, error) {
 		return nil, fmt.Errorf("unmarshal plaintext for SealOpen failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall SealOpen duration: %s", time.Since(sealOpenStart))
+	debugLogger.Printf("overall SealOpen duration: %s", time.Since(sealOpenStart))
 
 	return httpResp.Plaintext, nil
 }
