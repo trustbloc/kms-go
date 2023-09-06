@@ -14,15 +14,14 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
-	"github.com/hyperledger/aries-framework-go/component/log"
-
 	"github.com/trustbloc/kms-go/spi/kms"
-	spilog "github.com/trustbloc/kms-go/spi/log"
 )
 
 const (
@@ -31,9 +30,17 @@ const (
 
 	// ContentType is remoteKMS http content-type.
 	ContentType = "application/json"
+
+	logPrefix = " [kms-go/kms/webkms] "
 )
 
-var logger = log.New("aries-framework/kms/webkms")
+var errorLogger = log.New(os.Stderr, logPrefix, log.Ldate|log.Ltime|log.LUTC)
+var debugLogger = log.New(io.Discard, logPrefix, log.Ldate|log.Ltime|log.LUTC)
+
+// SetDebugOutput used to set output of debug logs.
+func SetDebugOutput(out io.Writer) {
+	debugLogger.SetOutput(out)
+}
 
 // HTTPClient interface for the http client.
 type HTTPClient interface {
@@ -174,7 +181,7 @@ func CreateKeyStore(httpClient HTTPClient, keyserverURL, controller, vaultURL st
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "CreateKeyStore")
+	defer closeResponseBody(resp.Body, "CreateKeyStore")
 
 	var httpResp createKeyStoreResp
 	err = readResponse(resp, &httpResp, json.Unmarshal)
@@ -183,8 +190,8 @@ func CreateKeyStore(httpClient HTTPClient, keyserverURL, controller, vaultURL st
 		return "", nil, fmt.Errorf("create keystore failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("call of CreateStore http request duration: %s", time.Since(start))
-	logger.Debugf("overall CreateStore duration: %s", time.Since(createKeyStoreStart))
+	debugLogger.Printf("call of CreateStore http request duration: %s", time.Since(start))
+	debugLogger.Printf("overall CreateStore duration: %s", time.Since(createKeyStoreStart))
 
 	return httpResp.KeyStoreURL, httpResp.Capability, nil
 }
@@ -255,7 +262,7 @@ func (r *RemoteKMS) doHTTPRequest(method, destination string, mReq []byte) (*htt
 
 	resp, err := r.httpClient.Do(httpReq)
 
-	logger.Debugf("  HTTP %s %s call duration: %s", method, destination, time.Since(start))
+	debugLogger.Printf("  HTTP %s %s call duration: %s", method, destination, time.Since(start))
 
 	return resp, err
 }
@@ -275,7 +282,7 @@ func (r *RemoteKMS) Create(kt kms.KeyType, opts ...kms.KeyOpts) (string, interfa
 
 	kid := keyURL[strings.LastIndex(keyURL, "/")+1:]
 
-	logger.Debugf("overall Create key duration: %s", time.Since(startCreate))
+	debugLogger.Printf("overall Create key duration: %s", time.Since(startCreate))
 
 	return kid, keyURL, nil
 }
@@ -305,7 +312,7 @@ func (r *RemoteKMS) createKey(kt kms.KeyType, opts ...kms.KeyOpts) (string, []by
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "Create")
+	defer closeResponseBody(resp.Body, "Create")
 
 	var httpResp createKeyResp
 
@@ -330,7 +337,7 @@ func (r *RemoteKMS) HealthCheck() error {
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "HealthCheck")
+	defer closeResponseBody(resp.Body, "HealthCheck")
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("kms health check return %d status code", resp.StatusCode)
@@ -378,7 +385,7 @@ func (r *RemoteKMS) ExportPubKeyBytes(keyID string) ([]byte, kms.KeyType, error)
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "ExportPubKeyBytes")
+	defer closeResponseBody(resp.Body, "ExportPubKeyBytes")
 
 	httpResp := &exportKeyResp{}
 
@@ -387,7 +394,7 @@ func (r *RemoteKMS) ExportPubKeyBytes(keyID string) ([]byte, kms.KeyType, error)
 		return nil, "", fmt.Errorf("export pub key bytes failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall ExportPubKeyBytes duration: %s", time.Since(startExport))
+	debugLogger.Printf("overall ExportPubKeyBytes duration: %s", time.Since(startExport))
 
 	return httpResp.PublicKey, kms.KeyType(httpResp.KeyType), nil
 }
@@ -408,7 +415,7 @@ func (r *RemoteKMS) CreateAndExportPubKeyBytes(kt kms.KeyType, opts ...kms.KeyOp
 
 	kid := keyURL[strings.LastIndex(keyURL, "/")+1:]
 
-	logger.Debugf("overall CreateAndExportPubKeyBytes duration: %s", time.Since(start))
+	debugLogger.Printf("overall CreateAndExportPubKeyBytes duration: %s", time.Since(start))
 
 	return kid, keyBytes, nil
 }
@@ -460,7 +467,7 @@ func (r *RemoteKMS) ImportPrivateKey(privKey interface{}, kt kms.KeyType,
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "ImportPrivateKey")
+	defer closeResponseBody(resp.Body, "ImportPrivateKey")
 
 	var httpResp importKeyResp
 	err = readResponse(resp, &httpResp, r.unmarshalFunc)
@@ -477,10 +484,10 @@ func (r *RemoteKMS) ImportPrivateKey(privKey interface{}, kt kms.KeyType,
 }
 
 // closeResponseBody closes the response body.
-func closeResponseBody(respBody io.Closer, logger spilog.Logger, action string) {
+func closeResponseBody(respBody io.Closer, action string) {
 	err := respBody.Close()
 	if err != nil {
-		logger.Errorf("Failed to close response body for '%s' REST call: %s", action, err.Error())
+		errorLogger.Printf("Failed to close response body for '%s' REST call: %s", action, err.Error())
 	}
 }
 

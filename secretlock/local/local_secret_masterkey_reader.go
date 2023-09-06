@@ -25,7 +25,7 @@ func MasterKeyFromPath(path string) (io.Reader, error) {
 	defer func() {
 		err = masterKeyFile.Close()
 		if err != nil {
-			logger.Warnf("failed to close file: %w", err)
+			logger.Printf("failed to close file: %v", err)
 		}
 	}()
 

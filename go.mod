@@ -15,7 +15,6 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/golang/protobuf v1.5.2
 	github.com/google/tink/go v1.7.0
-	github.com/hyperledger/aries-framework-go/component/log v0.0.0-20230417184158-344a7f82c4c2
 	github.com/hyperledger/ursa-wrapper-go v0.3.1
 	github.com/stretchr/testify v1.8.1
 	github.com/teserakt-io/golang-ed25519 v0.0.0-20210104091850-3888c087a4c8
@@ -27,13 +26,15 @@ require (
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.9.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/hyperledger/aries-framework-go/spi v0.0.0-20230417184158-344a7f82c4c2 // indirect
 	github.com/hyperledger/fabric-amcl v0.0.0-20230602173724-9e02669dceb2 // indirect
 	github.com/kilic/bls12-381 v0.1.0 // indirect
+	github.com/kr/pretty v0.2.1 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/mmcloughlin/addchain v0.4.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/tmplfunc v0.0.3 // indirect
 )

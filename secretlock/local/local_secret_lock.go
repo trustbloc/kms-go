@@ -11,12 +11,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
+	"os"
 
 	"github.com/google/tink/go/subtle/random"
 
 	"github.com/trustbloc/kms-go/spi/secretlock"
-
-	"github.com/hyperledger/aries-framework-go/component/log"
 
 	cipherutil "github.com/trustbloc/kms-go/secretlock/local/internal/cipher"
 )
@@ -47,7 +47,7 @@ import (
 // then the masterKey content in reader will be used as-is without being decrypted. The keys however are always
 // encrypted using the read masterKey.
 
-var logger = log.New("aries-framework/lock")
+var logger = log.New(os.Stderr, " [kms-go/lock] ", log.Ldate|log.Ltime|log.LUTC)
 
 const masterKeyLen = 512
 

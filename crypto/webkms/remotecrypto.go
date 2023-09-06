@@ -14,7 +14,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -23,15 +25,21 @@ import (
 
 	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
-	"github.com/hyperledger/aries-framework-go/component/log"
-
 	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/keyio"
 	webkmsimpl "github.com/trustbloc/kms-go/kms/webkms"
-
-	spi "github.com/trustbloc/kms-go/spi/log"
 )
 
-var logger = log.New("aries-framework/crypto/webkms")
+const (
+	logPrefix = " [kms-go/crypto/webkms] "
+)
+
+var errorLogger = log.New(os.Stderr, logPrefix, log.Ldate|log.Ltime|log.LUTC)
+var debugLogger = log.New(io.Discard, logPrefix, log.Ldate|log.Ltime|log.LUTC)
+
+// SetDebugOutput used to set output of debug logs.
+func SetDebugOutput(out io.Writer) {
+	debugLogger.SetOutput(out)
+}
 
 // HTTPClient interface for the http client.
 type HTTPClient interface {
@@ -258,7 +266,7 @@ func (r *RemoteCrypto) doHTTPRequest(method, destination string, mReq []byte) (*
 
 	resp, err := r.httpClient.Do(httpReq)
 
-	logger.Debugf("  HTTP %s %s call duration: %s", method, destination, time.Since(start))
+	debugLogger.Printf("  HTTP %s %s call duration: %s", method, destination, time.Since(start))
 
 	return resp, err
 }
@@ -290,7 +298,7 @@ func (r *RemoteCrypto) Encrypt(msg, aad []byte, keyURL interface{}) ([]byte, []b
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "Encrypt")
+	defer closeResponseBody(resp.Body, "Encrypt")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, nil, fmt.Errorf("posting Encrypt returned http error: %s", resp.Status)
@@ -308,7 +316,7 @@ func (r *RemoteCrypto) Encrypt(msg, aad []byte, keyURL interface{}) ([]byte, []b
 		return nil, nil, fmt.Errorf("unmarshal encryption for Encrypt failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall Encrypt duration: %s", time.Since(startEncrypt))
+	debugLogger.Printf("overall Encrypt duration: %s", time.Since(startEncrypt))
 
 	return httpResp.Ciphertext, httpResp.Nonce, nil
 }
@@ -340,7 +348,7 @@ func (r *RemoteCrypto) Decrypt(cipher, aad, nonce []byte, keyURL interface{}) ([
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "Decrypt")
+	defer closeResponseBody(resp.Body, "Decrypt")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting Decrypt returned http error: %s", resp.Status)
@@ -358,7 +366,7 @@ func (r *RemoteCrypto) Decrypt(cipher, aad, nonce []byte, keyURL interface{}) ([
 		return nil, fmt.Errorf("unmarshal decryption for Decrypt failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall Decrypt duration: %s", time.Since(startDecrypt))
+	debugLogger.Printf("overall Decrypt duration: %s", time.Since(startDecrypt))
 
 	return httpResp.Plaintext, nil
 }
@@ -387,7 +395,7 @@ func (r *RemoteCrypto) Sign(msg []byte, keyURL interface{}) ([]byte, error) {
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "Sign")
+	defer closeResponseBody(resp.Body, "Sign")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting Sign returned http error: %s", resp.Status)
@@ -405,7 +413,7 @@ func (r *RemoteCrypto) Sign(msg []byte, keyURL interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("unmarshal signature for Sign failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall Sign duration: %s", time.Since(startSign))
+	debugLogger.Printf("overall Sign duration: %s", time.Since(startSign))
 
 	return httpResp.Signature, nil
 }
@@ -435,13 +443,13 @@ func (r *RemoteCrypto) Verify(signature, msg []byte, keyURL interface{}) error {
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "Verify")
+	defer closeResponseBody(resp.Body, "Verify")
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("posting Verify signature returned http error: %s", resp.Status)
 	}
 
-	logger.Debugf("overall Verify duration: %s", time.Since(startVerify))
+	debugLogger.Printf("overall Verify duration: %s", time.Since(startVerify))
 
 	return nil
 }
@@ -480,7 +488,7 @@ func (r *RemoteCrypto) ComputeMAC(data []byte, keyURL interface{}) ([]byte, erro
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "ComputeMAC")
+	defer closeResponseBody(resp.Body, "ComputeMAC")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting ComputeMAC request returned http error: %s", resp.Status)
@@ -504,7 +512,7 @@ func (r *RemoteCrypto) ComputeMAC(data []byte, keyURL interface{}) ([]byte, erro
 		}
 	}
 
-	logger.Debugf("overall ComputeMAC duration: %s", time.Since(startComputeMAC))
+	debugLogger.Printf("overall ComputeMAC duration: %s", time.Since(startComputeMAC))
 
 	return httpResp.MAC, nil
 }
@@ -531,13 +539,13 @@ func (r *RemoteCrypto) VerifyMAC(mac, data []byte, keyURL interface{}) error {
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "VerifyMAC")
+	defer closeResponseBody(resp.Body, "VerifyMAC")
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("posting VerifyMAC request returned http error: %s", resp.Status)
 	}
 
-	logger.Debugf("overall VerifyMAC duration: %s", time.Since(startVerifyMAC))
+	debugLogger.Printf("overall VerifyMAC duration: %s", time.Since(startVerifyMAC))
 
 	return nil
 }
@@ -595,7 +603,7 @@ func (r *RemoteCrypto) WrapKey(cek, apu, apv []byte, recPubKey *cryptoapi.Public
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "WrapKey")
+	defer closeResponseBody(resp.Body, "WrapKey")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting WrapKey returned http error: %s", resp.Status)
@@ -608,7 +616,7 @@ func (r *RemoteCrypto) WrapKey(cek, apu, apv []byte, recPubKey *cryptoapi.Public
 
 	rwk, err := r.buildWrappedKeyResponse(respBody, destination)
 
-	logger.Debugf("overall WrapKey duration: %s", time.Since(startWrapKey))
+	debugLogger.Printf("overall WrapKey duration: %s", time.Since(startWrapKey))
 
 	return rwk, err
 }
@@ -668,7 +676,7 @@ func (r *RemoteCrypto) UnwrapKey(recWK *cryptoapi.RecipientWrappedKey, keyURL in
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "UnwrapKey")
+	defer closeResponseBody(resp.Body, "UnwrapKey")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting UnwrapKey returned http error: %s", resp.Status)
@@ -686,7 +694,7 @@ func (r *RemoteCrypto) UnwrapKey(recWK *cryptoapi.RecipientWrappedKey, keyURL in
 		return nil, fmt.Errorf("unmarshal unwrapKeyResp for UnwrapKey failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall UnwrapKey duration: %s", time.Since(startUnwrapKey))
+	debugLogger.Printf("overall UnwrapKey duration: %s", time.Since(startUnwrapKey))
 
 	return httpResp.Key, err
 }
@@ -731,7 +739,7 @@ func (r *RemoteCrypto) SignMulti(messages [][]byte, signerKeyURL interface{}) ([
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "BBS+ Sign")
+	defer closeResponseBody(resp.Body, "BBS+ Sign")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting BBS+ sign returned http error: %s", resp.Status)
@@ -749,7 +757,7 @@ func (r *RemoteCrypto) SignMulti(messages [][]byte, signerKeyURL interface{}) ([
 		return nil, fmt.Errorf("unmarshal signature for BBS+ Sign failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall BBS+ Sign duration: %s", time.Since(startSign))
+	debugLogger.Printf("overall BBS+ Sign duration: %s", time.Since(startSign))
 
 	return httpResp.Signature, nil
 }
@@ -778,13 +786,13 @@ func (r *RemoteCrypto) VerifyMulti(messages [][]byte, signature []byte, signerKe
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "BBS+ Verify")
+	defer closeResponseBody(resp.Body, "BBS+ Verify")
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("posting BBS+ Verify signature returned http error: %s", resp.Status)
 	}
 
-	logger.Debugf("overall BBS+ Verify duration: %s", time.Since(startVerify))
+	debugLogger.Printf("overall BBS+ Verify duration: %s", time.Since(startVerify))
 
 	return nil
 }
@@ -815,13 +823,13 @@ func (r *RemoteCrypto) VerifyProof(revealedMessages [][]byte, proof, nonce []byt
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "BBS+ Verify Proof")
+	defer closeResponseBody(resp.Body, "BBS+ Verify Proof")
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("posting BBS+ Verify proof returned http error: %s", resp.Status)
 	}
 
-	logger.Debugf("overall BBS+ Verify proof duration: %s", time.Since(startVerifyProof))
+	debugLogger.Printf("overall BBS+ Verify proof duration: %s", time.Since(startVerifyProof))
 
 	return nil
 }
@@ -855,7 +863,7 @@ func (r *RemoteCrypto) DeriveProof(messages [][]byte, bbsSignature, nonce []byte
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "BBS+ Derive Proof")
+	defer closeResponseBody(resp.Body, "BBS+ Derive Proof")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting BBS+ Derive proof returned http error: %s", resp.Status)
@@ -873,7 +881,7 @@ func (r *RemoteCrypto) DeriveProof(messages [][]byte, bbsSignature, nonce []byte
 		return nil, fmt.Errorf("unmarshal request for BBS+ Derive proof failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall BBS+ Derive proof duration: %s", time.Since(startDeriveProof))
+	debugLogger.Printf("overall BBS+ Derive proof duration: %s", time.Since(startDeriveProof))
 
 	return httpResp.Proof, nil
 }
@@ -902,7 +910,7 @@ func (r *RemoteCrypto) Blind(kh interface{}, values ...map[string]interface{}) (
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "CL Blind")
+	defer closeResponseBody(resp.Body, "CL Blind")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("posting CL Blind returned http error: %s", resp.Status)
@@ -920,7 +928,7 @@ func (r *RemoteCrypto) Blind(kh interface{}, values ...map[string]interface{}) (
 		return nil, fmt.Errorf("unmarshal blinded values for CL Blind failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall CL Blind duration: %s", time.Since(startBlind))
+	debugLogger.Printf("overall CL Blind duration: %s", time.Since(startBlind))
 
 	return httpResp.Blinded, nil
 }
@@ -940,7 +948,7 @@ func (r *RemoteCrypto) GetCorrectnessProof(kh interface{}) ([]byte, error) {
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "CL CorrectnessProof")
+	defer closeResponseBody(resp.Body, "CL CorrectnessProof")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("getting CL CorrectnessProof returned http error: %s", resp.Status)
@@ -958,7 +966,7 @@ func (r *RemoteCrypto) GetCorrectnessProof(kh interface{}) ([]byte, error) {
 		return nil, fmt.Errorf("unmarshal value for CL CorrectnessProof failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall CL CorrectnessProof duration: %s", time.Since(startGet))
+	debugLogger.Printf("overall CL CorrectnessProof duration: %s", time.Since(startGet))
 
 	return httpResp.CorrectnessProof, nil
 }
@@ -994,7 +1002,7 @@ func (r *RemoteCrypto) SignWithSecrets(kh interface{}, values map[string]interfa
 	}
 
 	// handle response
-	defer closeResponseBody(resp.Body, logger, "CL SignWithSecrets")
+	defer closeResponseBody(resp.Body, "CL SignWithSecrets")
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, nil, fmt.Errorf("posting CL SignWithSecrets returned http error: %s", resp.Status)
@@ -1012,15 +1020,15 @@ func (r *RemoteCrypto) SignWithSecrets(kh interface{}, values map[string]interfa
 		return nil, nil, fmt.Errorf("unmarshal values for CL SignWithSecrets failed [%s, %w]", destination, err)
 	}
 
-	logger.Debugf("overall CL SignWithSecrets duration: %s", time.Since(startSign))
+	debugLogger.Printf("overall CL SignWithSecrets duration: %s", time.Since(startSign))
 
 	return httpResp.Signature, httpResp.CorrectnessProof, nil
 }
 
 // closeResponseBody closes the response body.
-func closeResponseBody(respBody io.Closer, logger spi.Logger, action string) {
+func closeResponseBody(respBody io.Closer, action string) {
 	err := respBody.Close()
 	if err != nil {
-		logger.Errorf("Failed to close response body for '%s' REST call: %s", action, err.Error())
+		errorLogger.Printf("Failed to close response body for '%s' REST call: %s", action, err.Error())
 	}
 }

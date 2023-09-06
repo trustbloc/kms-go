@@ -148,7 +148,7 @@ func processPOSTSealOpenRequest(w http.ResponseWriter, r *http.Request, recipien
 			return fmt.Errorf("read ciphertext request for SealOpen failed [%s, %w]", destination, err)
 		}
 
-		defer closeResponseBody(r.Body, logger, "MockServer-SealOpen")
+		defer closeResponseBody(r.Body, "MockServer-SealOpen")
 
 		httpReq := &sealOpenReq{}
 
@@ -330,7 +330,7 @@ func processPOSTEasyOpenRequest(w http.ResponseWriter, r *http.Request, recPrivK
 			return fmt.Errorf("read ciphertext request for EasyOpen failed [%s, %w]", destination, err)
 		}
 
-		defer closeResponseBody(r.Body, logger, "MockServer-Easy")
+		defer closeResponseBody(r.Body, "MockServer-Easy")
 
 		httpReq := &easyReq{}
 
@@ -383,7 +383,7 @@ func processPOSTEasyOpenRequest(w http.ResponseWriter, r *http.Request, recPrivK
 			return fmt.Errorf("read ciphertext request for EasyOpen failed [%s, %w]", destination, err)
 		}
 
-		defer closeResponseBody(r.Body, logger, "MockServer-EasyOpen")
+		defer closeResponseBody(r.Body, "MockServer-EasyOpen")
 
 		httpReq := &easyOpenReq{}
 
