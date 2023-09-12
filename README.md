@@ -6,7 +6,17 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/trustbloc/kms-crypto-go)](https://goreportcard.com/report/github.com/trustbloc/kms-crypto-go)
 
 
-# TrustBloc KMS Crypto Go Library
+# TrustBloc KMS Go Library
+
+The TrustBloc KMS Go repo contains APIs for Key Management Services (KMS) and Crypto functions.
+
+The Key Management Service(KMS) module has the following implementations.
+- LocalKMS: Go KMS implementation to use API consumer-specified storage provider
+- WebKMS: Go client for remote KMS implementing [W3C-CCG WebKMS](https://w3c-ccg.github.io/webkms/) standard
+
+The Crypto module has the following implementations.
+- tinkcrypto: Wrapper on top of [Google Tink library](https://github.com/google/tink/)
+- WebKMS: Go client to interact with the KMS server
 
 
 ## License
