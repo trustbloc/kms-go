@@ -16,6 +16,7 @@ The Key Management Service(KMS) module has the following implementations.
 
 The Crypto module has the following implementations.
 - tinkcrypto: Wrapper on top of [Google Tink library](https://github.com/google/tink/)
+- BBS+ crypto implementation
 - WebKMS: Go client to interact with the KMS server
 
 
