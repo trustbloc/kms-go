@@ -26,12 +26,12 @@ import (
 	"github.com/google/tink/go/keyset"
 	"github.com/google/tink/go/subtle/random"
 	"github.com/stretchr/testify/require"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
 	"github.com/trustbloc/kms-go/spi/crypto"
 	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 	"github.com/trustbloc/kms-go/spi/secretlock"
 
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 	"github.com/trustbloc/kms-go/crypto/tinkcrypto"
 	"github.com/trustbloc/kms-go/kms"
 	"github.com/trustbloc/kms-go/kms/localkms/internal/keywrapper"

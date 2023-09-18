@@ -16,6 +16,7 @@ import (
 
 	"github.com/google/tink/go/aead"
 	"github.com/google/tink/go/keyset"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
 	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 
@@ -23,7 +24,6 @@ import (
 
 	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 	"github.com/trustbloc/kms-go/doc/util/jwkkid"
 	"github.com/trustbloc/kms-go/kms"
 	"github.com/trustbloc/kms-go/kms/localkms/internal/keywrapper"

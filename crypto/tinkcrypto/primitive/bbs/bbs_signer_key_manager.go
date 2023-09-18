@@ -15,9 +15,9 @@ import (
 	commonpb "github.com/google/tink/go/proto/common_go_proto"
 	tinkpb "github.com/google/tink/go/proto/tink_go_proto"
 	"github.com/google/tink/go/subtle"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 	bbssubtle "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/bbs/subtle"
 	bbspb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/bbs_go_proto"
 )

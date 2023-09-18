@@ -22,6 +22,7 @@ import (
 	"github.com/btcsuite/btcd/btcec"
 	commonpb "github.com/google/tink/go/proto/common_go_proto"
 	"github.com/stretchr/testify/require"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
 	"github.com/trustbloc/kms-go/util/cryptoutil"
 
@@ -29,7 +30,6 @@ import (
 
 	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 	ecdhpb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/ecdh_aead_go_proto"
 )
 

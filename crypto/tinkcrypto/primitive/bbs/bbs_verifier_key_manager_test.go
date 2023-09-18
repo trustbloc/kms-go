@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package bbs
 
 import (
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 	"strings"
 	"testing"
 
@@ -15,7 +16,6 @@ import (
 	"github.com/google/tink/go/subtle"
 	"github.com/stretchr/testify/require"
 
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 	bbspb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/bbs_go_proto"
 )
 
