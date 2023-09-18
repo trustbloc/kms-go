@@ -22,8 +22,8 @@ import (
 	"github.com/google/tink/go/testutil"
 	"github.com/google/tink/go/tink"
 	"github.com/stretchr/testify/require"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/bbs/api"
 	bbspb "github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/proto/bbs_go_proto"
 )

@@ -18,10 +18,9 @@ import (
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/json"
 	"github.com/stretchr/testify/require"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
 	"github.com/trustbloc/kms-go/spi/kms"
-
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
 )
 
 func TestDecodePublicKey(t *testing.T) {

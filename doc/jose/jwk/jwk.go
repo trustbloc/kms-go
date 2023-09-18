@@ -20,13 +20,11 @@ import (
 
 	"github.com/btcsuite/btcd/btcec"
 	"github.com/go-jose/go-jose/v3"
+	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 	"golang.org/x/crypto/ed25519"
 
-	"github.com/trustbloc/kms-go/util/cryptoutil"
-
 	"github.com/trustbloc/kms-go/spi/kms"
-
-	"github.com/trustbloc/kms-go/crypto/primitive/bbs12381g2pub"
+	"github.com/trustbloc/kms-go/util/cryptoutil"
 )
 
 const (
