@@ -1,6 +1,3 @@
-//go:build !ursa
-// +build !ursa
-
 /*
 Copyright Avast Software. All Rights Reserved.
 

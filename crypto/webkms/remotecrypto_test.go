@@ -1197,29 +1197,6 @@ func TestNonOKStatusCode(t *testing.T) {
 		}, []byte{}, []byte{}, nonOKDefaultKeyURL)
 		require.Contains(t, err.Error(), "501")
 	})
-
-	t.Run("Blind Post request failure 501", func(t *testing.T) {
-		tmpCrypto := New(nonOKDefaultKeyURL, nonOKClient)
-
-		_, err := tmpCrypto.Blind(nonOKDefaultKeyURL, map[string]interface{}{})
-		require.Contains(t, err.Error(), "501")
-	})
-
-	t.Run("CorrectnessProof Get request failure 501", func(t *testing.T) {
-		tmpCrypto := New(nonOKDefaultKeyURL, nonOKClient)
-
-		_, err := tmpCrypto.GetCorrectnessProof(nonOKDefaultKeyURL)
-		require.Contains(t, err.Error(), "501")
-	})
-
-	t.Run("SignWithSecrets Post request failure 501", func(t *testing.T) {
-		tmpCrypto := New(nonOKDefaultKeyURL, nonOKClient)
-
-		_, _, err := tmpCrypto.SignWithSecrets(nonOKDefaultKeyURL,
-			map[string]interface{}{},
-			nil, nil, nil, "did:example")
-		require.Contains(t, err.Error(), "501")
-	})
 }
 
 // nolint:gocyclo
