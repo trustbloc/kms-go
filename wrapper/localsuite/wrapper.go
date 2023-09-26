@@ -3,14 +3,21 @@ Copyright Gen Digital Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-// Package wrapper provides wrappers that combine localkms and tinkcrypto together into a more streamlined API.
-package wrapper
+package localsuite
 
 import (
 	"github.com/trustbloc/kms-go/doc/jose/jwk"
-	"github.com/trustbloc/kms-go/doc/jose/jwk/jwksupport"
 	"github.com/trustbloc/kms-go/spi/kms"
+	"github.com/trustbloc/kms-go/wrapper/api"
 )
+
+// newKMSCrypto creates a KMSCrypto instance.
+func newKMSCrypto(kms keyManager, crypto signerVerifier) api.KMSCrypto {
+	return &kmsCryptoImpl{
+		kms: kms,
+		cr:  crypto,
+	}
+}
 
 type kmsCryptoImpl struct {
 	kms keyManager
@@ -18,19 +25,7 @@ type kmsCryptoImpl struct {
 }
 
 func (k *kmsCryptoImpl) Create(keyType kms.KeyType) (*jwk.JWK, error) {
-	kid, pkBytes, err := k.kms.CreateAndExportPubKeyBytes(keyType)
-	if err != nil {
-		return nil, err
-	}
-
-	pk, err := jwksupport.PubKeyBytesToJWK(pkBytes, keyType)
-	if err != nil {
-		return nil, err
-	}
-
-	pk.KeyID = kid
-
-	return pk, nil
+	return createKey(k.kms, keyType)
 }
 
 func (k *kmsCryptoImpl) Sign(msg []byte, pub *jwk.JWK) ([]byte, error) {
@@ -79,32 +74,40 @@ func (k *kmsCryptoImpl) Verify(sig, msg []byte, pub *jwk.JWK) error {
 	return k.cr.Verify(sig, msg, kh)
 }
 
-func (k *kmsCryptoImpl) FixedKeyCrypto(pub *jwk.JWK) (FixedKeyCrypto, error) {
-	sigKH, err := k.kms.Get(pub.KeyID)
+func (k *kmsCryptoImpl) FixedKeyCrypto(pub *jwk.JWK) (api.FixedKeyCrypto, error) {
+	return makeFixedKeyCrypto(k.kms, k.cr, pub)
+}
+
+func makeFixedKeyCrypto(kms keyManager, crypto signerVerifier, pub *jwk.JWK) (api.FixedKeyCrypto, error) {
+	sigKH, err := kms.Get(pub.KeyID)
 	if err != nil {
 		return nil, err
 	}
 
-	verKH, err := getKeyHandle(pub, k.kms)
+	verKH, err := getKeyHandle(pub, kms)
 	if err != nil {
 		return nil, err
 	}
 
 	return &fixedKeyImpl{
-		cr:    k.cr,
+		cr:    crypto,
 		sigKH: sigKH,
 		verKH: verKH,
 	}, nil
 }
 
-func (k *kmsCryptoImpl) FixedKeySigner(pub *jwk.JWK) (FixedKeySigner, error) {
-	kh, err := k.kms.Get(pub.KeyID)
+func (k *kmsCryptoImpl) FixedKeySigner(pub *jwk.JWK) (api.FixedKeySigner, error) {
+	return makeFixedKeySigner(k.kms, k.cr, pub.KeyID)
+}
+
+func makeFixedKeySigner(kms keyGetter, crypto signer, kid string) (api.FixedKeySigner, error) {
+	kh, err := kms.Get(kid)
 	if err != nil {
 		return nil, err
 	}
 
 	return &fixedKeySignerImpl{
-		cr: k.cr,
+		cr: crypto,
 		kh: kh,
 	}, nil
 }

@@ -3,7 +3,7 @@ Copyright Gen Digital Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package wrapper
+package localsuite
 
 import (
 	"crypto/ed25519"
@@ -24,7 +24,7 @@ func TestKMSCrypto_Create(t *testing.T) {
 		edPub, _, err := ed25519.GenerateKey(rand.Reader)
 		require.NoError(t, err)
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{
+		kc := newKMSCrypto(&mockkms.KeyManager{
 			CrAndExportPubKeyValue: edPub,
 		}, &mockcrypto.Crypto{})
 
@@ -38,7 +38,7 @@ func TestKMSCrypto_Create(t *testing.T) {
 	t.Run("kms err", func(t *testing.T) {
 		errExpected := errors.New("expected error")
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{
+		kc := newKMSCrypto(&mockkms.KeyManager{
 			CrAndExportPubKeyErr: errExpected,
 		}, &mockcrypto.Crypto{})
 
@@ -48,7 +48,7 @@ func TestKMSCrypto_Create(t *testing.T) {
 	})
 
 	t.Run("invalid public key bytes value", func(t *testing.T) {
-		kc := NewKMSCrypto(&mockkms.KeyManager{
+		kc := newKMSCrypto(&mockkms.KeyManager{
 			CrAndExportPubKeyValue: []byte("invalid"),
 		}, &mockcrypto.Crypto{})
 
@@ -65,7 +65,7 @@ func TestKmsCrypto_Sign(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		expectSig := []byte("signature")
 
-		kc := NewKMSCrypto(
+		kc := newKMSCrypto(
 			&mockkms.KeyManager{},
 			&mockcrypto.Crypto{
 				SignValue: expectSig,
@@ -77,7 +77,7 @@ func TestKmsCrypto_Sign(t *testing.T) {
 	})
 
 	t.Run("kms error", func(t *testing.T) {
-		kc := NewKMSCrypto(
+		kc := newKMSCrypto(
 			&mockkms.KeyManager{
 				GetKeyErr: errExpected,
 			},
@@ -89,7 +89,7 @@ func TestKmsCrypto_Sign(t *testing.T) {
 	})
 
 	t.Run("crypto error", func(t *testing.T) {
-		kc := NewKMSCrypto(
+		kc := newKMSCrypto(
 			&mockkms.KeyManager{},
 			&mockcrypto.Crypto{
 				SignErr: errExpected,
@@ -110,7 +110,7 @@ func TestKMSCrypto_Verify(t *testing.T) {
 			JSONWebKey: jose.JSONWebKey{KeyID: "foo"},
 		}
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
 
 		err := kc.Verify(sig, msg, pk)
 		require.NoError(t, err)
@@ -120,14 +120,14 @@ func TestKMSCrypto_Verify(t *testing.T) {
 		edPub, _, err := ed25519.GenerateKey(rand.Reader)
 		require.NoError(t, err)
 
-		signerKC := NewKMSCrypto(&mockkms.KeyManager{
+		signerKC := newKMSCrypto(&mockkms.KeyManager{
 			CrAndExportPubKeyValue: edPub,
 		}, &mockcrypto.Crypto{})
 
 		pk, err := signerKC.Create(kmsapi.ED25519)
 		require.NoError(t, err)
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{
+		kc := newKMSCrypto(&mockkms.KeyManager{
 			ExportPubKeyBytesErr: errors.New("not my key"),
 		}, &mockcrypto.Crypto{})
 
@@ -140,7 +140,7 @@ func TestKMSCrypto_Verify(t *testing.T) {
 			JSONWebKey: jose.JSONWebKey{KeyID: "foo"},
 		}
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{
+		kc := newKMSCrypto(&mockkms.KeyManager{
 			ExportPubKeyBytesErr: errors.New("not my key"),
 		}, &mockcrypto.Crypto{})
 
@@ -156,7 +156,7 @@ func TestKMSCrypto_Verify(t *testing.T) {
 			JSONWebKey: jose.JSONWebKey{KeyID: "foo"},
 		}
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{
+		kc := newKMSCrypto(&mockkms.KeyManager{
 			PubKeyBytesToHandleErr: errExpected,
 		}, &mockcrypto.Crypto{})
 
@@ -169,7 +169,7 @@ func TestKMSCrypto_Verify(t *testing.T) {
 			JSONWebKey: jose.JSONWebKey{KeyID: "foo"},
 		}
 
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			VerifyErr: errExpected,
 		})
 
@@ -187,7 +187,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 	errExpected := errors.New("expected error")
 
 	t.Run("get fixed key crypto success", func(t *testing.T) {
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
 
 		fkc, err := kc.FixedKeyCrypto(pk)
 		require.NoError(t, err)
@@ -200,7 +200,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 
 	t.Run("get fixed key crypto error", func(t *testing.T) {
 		t.Run("kms get", func(t *testing.T) {
-			kc := NewKMSCrypto(&mockkms.KeyManager{
+			kc := newKMSCrypto(&mockkms.KeyManager{
 				GetKeyErr: errExpected,
 			}, &mockcrypto.Crypto{})
 
@@ -214,7 +214,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 		})
 
 		t.Run("verification key handle", func(t *testing.T) {
-			kc := NewKMSCrypto(&mockkms.KeyManager{
+			kc := newKMSCrypto(&mockkms.KeyManager{
 				ExportPubKeyBytesErr: errors.New("not my key"),
 			}, &mockcrypto.Crypto{})
 
@@ -226,7 +226,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 	})
 
 	t.Run("sign success", func(t *testing.T) {
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			SignValue: sig,
 		})
 
@@ -248,7 +248,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 	})
 
 	t.Run("sign error", func(t *testing.T) {
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			SignErr: errExpected,
 		})
 
@@ -270,7 +270,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 	})
 
 	t.Run("verify success", func(t *testing.T) {
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
 
 		fkc, err := kc.FixedKeyCrypto(pk)
 		require.NoError(t, err)
@@ -281,7 +281,7 @@ func TestKmsCrypto_FixedKey(t *testing.T) {
 	})
 
 	t.Run("verify error", func(t *testing.T) {
-		kc := NewKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kc := newKMSCrypto(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			VerifyErr: errExpected,
 		})
 
@@ -303,7 +303,7 @@ func TestKMSCryptoSigner_Sign(t *testing.T) {
 	}
 
 	t.Run("success", func(t *testing.T) {
-		kcs := NewKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kcs := newKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			SignValue: sig,
 		})
 
@@ -313,7 +313,7 @@ func TestKMSCryptoSigner_Sign(t *testing.T) {
 	})
 
 	t.Run("kms get error", func(t *testing.T) {
-		kcs := NewKMSCryptoSigner(&mockkms.KeyManager{
+		kcs := newKMSCryptoSigner(&mockkms.KeyManager{
 			GetKeyErr: errExpected,
 		}, &mockcrypto.Crypto{})
 
@@ -323,7 +323,7 @@ func TestKMSCryptoSigner_Sign(t *testing.T) {
 	})
 
 	t.Run("crypto sign error", func(t *testing.T) {
-		kcs := NewKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kcs := newKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			SignErr: errExpected,
 		})
 
@@ -342,7 +342,7 @@ func TestKmsCryptoSigner_FixedKeySigner(t *testing.T) {
 	errExpected := errors.New("expected error")
 
 	t.Run("get fixed key signer success", func(t *testing.T) {
-		ks := NewKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
+		ks := newKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{})
 
 		fks, err := ks.FixedKeySigner(pk)
 		require.NoError(t, err)
@@ -350,7 +350,7 @@ func TestKmsCryptoSigner_FixedKeySigner(t *testing.T) {
 	})
 
 	t.Run("get fixed key signer error", func(t *testing.T) {
-		ks := NewKMSCryptoSigner(&mockkms.KeyManager{
+		ks := newKMSCryptoSigner(&mockkms.KeyManager{
 			GetKeyErr: errExpected,
 		}, &mockcrypto.Crypto{})
 
@@ -360,7 +360,7 @@ func TestKmsCryptoSigner_FixedKeySigner(t *testing.T) {
 	})
 
 	t.Run("sign success", func(t *testing.T) {
-		kc := NewKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kc := newKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			SignValue: sig,
 		})
 
@@ -374,7 +374,7 @@ func TestKmsCryptoSigner_FixedKeySigner(t *testing.T) {
 	})
 
 	t.Run("sign error", func(t *testing.T) {
-		kc := NewKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
+		kc := newKMSCryptoSigner(&mockkms.KeyManager{}, &mockcrypto.Crypto{
 			SignErr: errExpected,
 		})
 

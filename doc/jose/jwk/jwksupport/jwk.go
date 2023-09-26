@@ -11,11 +11,14 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
 
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
@@ -56,6 +59,62 @@ func JWKFromKey(opaqueKey interface{}) (*jwk.JWK, error) {
 	return key, nil
 }
 
+// PubKeyBytesToKey creates an opaque key struct from the given public key bytes.
+// It's e.g. *ecdsa.PublicKey, *ecdsa.PrivateKey, ed25519.VerificationMethod, *bbs12381g2pub.PrivateKey or
+// *bbs12381g2pub.PublicKey.
+func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { // nolint:gocyclo
+	switch keyType {
+	case kms.ED25519Type:
+		return ed25519.PublicKey(bytes), nil
+	case kms.X25519ECDHKWType:
+		return bytes, nil
+	case kms.BLS12381G2Type:
+		return bbs12381g2pub.UnmarshalPublicKey(bytes)
+	case kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363,
+		kms.ECDSASecp256k1TypeIEEEP1363:
+		crv := getECDSACurve(keyType)
+		x, y := elliptic.Unmarshal(crv, bytes)
+
+		return &ecdsa.PublicKey{
+			Curve: crv,
+			X:     x,
+			Y:     y,
+		}, nil
+	case kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER:
+		pubKey, err := x509.ParsePKIXPublicKey(bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse ecdsa key in DER format: %w", err)
+		}
+
+		ecKey, ok := pubKey.(*ecdsa.PublicKey)
+		if !ok {
+			return nil, errors.New("invalid EC key")
+		}
+
+		return ecKey, nil
+	case kms.ECDSASecp256k1TypeDER:
+		return parseSecp256k1DER(bytes)
+	case kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType:
+		crv := getECDSACurve(keyType)
+		pubKey := &cryptoapi.PublicKey{}
+
+		err := json.Unmarshal(bytes, pubKey)
+		if err != nil {
+			return nil, err
+		}
+
+		ecdsaKey := &ecdsa.PublicKey{
+			Curve: crv,
+			X:     new(big.Int).SetBytes(pubKey.X),
+			Y:     new(big.Int).SetBytes(pubKey.Y),
+		}
+
+		return ecdsaKey, nil
+	default:
+		return nil, fmt.Errorf("invalid key type: %s", keyType)
+	}
+}
+
 // JWKFromX25519Key is similar to JWKFromKey but is specific to X25519 keys when using a public key as raw []byte.
 // This builder function presets the curve and key type in the JWK.
 // Using JWKFromKey for X25519 raw keys will not have these fields set and will not provide the right JWK output.
@@ -83,52 +142,29 @@ func JWKFromX25519Key(pubKey []byte) (*jwk.JWK, error) {
 }
 
 // PubKeyBytesToJWK converts marshalled bytes of keyType into JWK.
-func PubKeyBytesToJWK(bytes []byte, keyType kms.KeyType) (*jwk.JWK, error) { // nolint:gocyclo
+func PubKeyBytesToJWK(bytes []byte, keyType kms.KeyType) (*jwk.JWK, error) {
 	switch keyType {
 	case kms.ED25519Type:
-		return JWKFromKey(ed25519.PublicKey(bytes))
-	case kms.BLS12381G2Type:
-		bbsKey, err := bbs12381g2pub.UnmarshalPublicKey(bytes)
-		if err != nil {
-			return nil, err
-		}
-
-		return JWKFromKey(bbsKey)
-	case kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363:
-		crv := getECDSACurve(keyType)
-		x, y := elliptic.Unmarshal(crv, bytes)
-
-		return JWKFromKey(&ecdsa.PublicKey{Curve: crv, X: x, Y: y})
-	case kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER:
-		pubKey, err := x509.ParsePKIXPublicKey(bytes)
-		if err != nil {
-			return nil, err
-		}
-
-		ecKey, ok := pubKey.(*ecdsa.PublicKey)
-		if !ok {
-			return nil, errors.New("invalid EC key")
-		}
-
-		return JWKFromKey(ecKey)
-	case kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType:
-		crv := getECDSACurve(keyType)
-		pubKey := &cryptoapi.PublicKey{}
-
-		err := json.Unmarshal(bytes, pubKey)
-		if err != nil {
-			return nil, err
-		}
-
-		ecdsaKey := &ecdsa.PublicKey{
-			Curve: crv,
-			X:     new(big.Int).SetBytes(pubKey.X),
-			Y:     new(big.Int).SetBytes(pubKey.Y),
-		}
-
-		return JWKFromKey(ecdsaKey)
+		return &jwk.JWK{
+			JSONWebKey: jose.JSONWebKey{
+				Key: ed25519.PublicKey(bytes),
+			},
+			Kty: "OKP",
+			Crv: "Ed25519",
+		}, nil
 	case kms.X25519ECDHKWType:
 		return JWKFromX25519Key(bytes)
+	case kms.BLS12381G2Type,
+		kms.ECDSASecp256k1TypeIEEEP1363, kms.ECDSASecp256k1TypeDER,
+		kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363,
+		kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER,
+		kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType:
+		key, err := PubKeyBytesToKey(bytes, keyType)
+		if err != nil {
+			return nil, err
+		}
+
+		return JWKFromKey(key)
 	default:
 		return nil, fmt.Errorf("convertPubKeyJWK: invalid key type: %s", keyType)
 	}
@@ -142,9 +178,39 @@ func getECDSACurve(keyType kms.KeyType) elliptic.Curve {
 		return elliptic.P384()
 	case kms.ECDSAP521TypeIEEEP1363, kms.ECDSAP521TypeDER, kms.NISTP521ECDHKWType:
 		return elliptic.P521()
+	case kms.ECDSASecp256k1TypeIEEEP1363, kms.ECDSASecp256k1TypeDER:
+		return btcec.S256()
 	}
 
 	return nil
+}
+
+type publicKeyInfo struct {
+	Raw       asn1.RawContent
+	Algorithm pkix.AlgorithmIdentifier
+	PublicKey asn1.BitString
+}
+
+func parseSecp256k1DER(keyBytes []byte) (*ecdsa.PublicKey, error) {
+	var (
+		pki    publicKeyInfo
+		rest   []byte
+		err    error
+		pubKey *btcec.PublicKey
+	)
+
+	if rest, err = asn1.Unmarshal(keyBytes, &pki); err != nil {
+		return nil, err
+	} else if len(rest) != 0 {
+		return nil, fmt.Errorf("x509: trailing data after ASN.1 of public-key")
+	}
+
+	pubKey, err = btcec.ParsePubKey(pki.PublicKey.RightAlign(), btcec.S256())
+	if err != nil {
+		return nil, err
+	}
+
+	return pubKey.ToECDSA(), nil
 }
 
 // PublicKeyFromJWK builds a cryptoapi.PublicKey from jwkKey.
