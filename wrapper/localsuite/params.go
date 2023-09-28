@@ -3,7 +3,7 @@ Copyright Gen Digital Inc. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 */
 
-package wrapper
+package localsuite
 
 import (
 	kmsapi "github.com/trustbloc/kms-go/spi/kms"
@@ -11,6 +11,11 @@ import (
 
 type signer interface {
 	Sign(msg []byte, kh interface{}) ([]byte, error)
+}
+
+type multiSigner interface {
+	signer
+	SignMulti(messages [][]byte, kh interface{}) ([]byte, error)
 }
 
 type verifier interface {
@@ -39,4 +44,15 @@ type keyCreator interface {
 type keyManager interface {
 	keyCreator
 	keyHandleFetcher
+}
+
+type encDecrypter interface {
+	Encrypt(msg, aad []byte, kh interface{}) ([]byte, []byte, error)
+	Decrypt(cipher, aad, nonce []byte, kh interface{}) ([]byte, error)
+}
+
+type allCrypto interface {
+	multiSigner
+	verifier
+	encDecrypter
 }

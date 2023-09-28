@@ -13,12 +13,15 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
 
+	"github.com/btcsuite/btcd/btcec"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/stretchr/testify/require"
 	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
@@ -332,6 +335,185 @@ func TestBBSJWK(t *testing.T) {
 	})
 }
 
+func TestPubKeyBytesToKey(t *testing.T) {
+	tt := []struct {
+		keyTypes   []kms.KeyType
+		getKey     func(keyType kms.KeyType) ([]byte, error)
+		expectType interface{}
+	}{
+		{
+			keyTypes: []kms.KeyType{kms.ED25519Type},
+			getKey: func(kms.KeyType) ([]byte, error) {
+				pubKey, _, err := ed25519.GenerateKey(rand.Reader)
+				return pubKey, err
+			},
+			expectType: ed25519.PublicKey{},
+		},
+		{
+			keyTypes: []kms.KeyType{kms.X25519ECDHKWType},
+			getKey: func(kms.KeyType) ([]byte, error) {
+				pubKeyBytes := make([]byte, 32)
+				_, err := rand.Read(pubKeyBytes)
+
+				return pubKeyBytes, err
+			},
+			expectType: []byte{},
+		},
+		{
+			keyTypes: []kms.KeyType{kms.BLS12381G2Type},
+			getKey: func(kms.KeyType) ([]byte, error) {
+				pubKey, _, err := bbs12381g2pub.GenerateKeyPair(sha256.New, nil)
+				if err != nil {
+					return nil, err
+				}
+
+				keyBytes, err := pubKey.Marshal()
+				return keyBytes, err
+			},
+			expectType: &bbs12381g2pub.PublicKey{},
+		},
+		{
+			keyTypes: []kms.KeyType{
+				kms.ECDSAP256TypeIEEEP1363,
+				kms.ECDSAP384TypeIEEEP1363,
+				kms.ECDSAP521TypeIEEEP1363,
+				kms.ECDSASecp256k1TypeIEEEP1363,
+			},
+			getKey: func(keyType kms.KeyType) ([]byte, error) {
+				crv := getECDSACurve(keyType)
+				privKey, err := ecdsa.GenerateKey(crv, rand.Reader)
+				if err != nil {
+					return nil, err
+				}
+
+				keyBytes := elliptic.Marshal(crv, privKey.X, privKey.Y)
+				return keyBytes, nil
+			},
+			expectType: &ecdsa.PublicKey{},
+		},
+		{
+			keyTypes: []kms.KeyType{
+				kms.ECDSAP256TypeDER,
+				kms.ECDSAP384TypeDER,
+				kms.ECDSAP521TypeDER,
+			},
+			getKey: func(keyType kms.KeyType) ([]byte, error) {
+				crv := getECDSACurve(keyType)
+				privKey, err := ecdsa.GenerateKey(crv, rand.Reader)
+				if err != nil {
+					return nil, err
+				}
+
+				return x509.MarshalPKIXPublicKey(&privKey.PublicKey)
+			},
+			expectType: &ecdsa.PublicKey{},
+		},
+		{
+			keyTypes: []kms.KeyType{
+				kms.ECDSASecp256k1TypeDER,
+			},
+			getKey: func(keyType kms.KeyType) ([]byte, error) {
+				priv, err := btcec.NewPrivateKey(btcec.S256())
+				if err != nil {
+					return nil, err
+				}
+
+				pubKey := priv.PubKey()
+
+				return marshalSecp256k1DER((*ecdsa.PublicKey)(pubKey))
+			},
+			expectType: &ecdsa.PublicKey{},
+		},
+		{
+			keyTypes: []kms.KeyType{
+				kms.NISTP256ECDHKWType,
+				kms.NISTP384ECDHKWType,
+				kms.NISTP521ECDHKWType,
+			},
+			getKey: func(keyType kms.KeyType) ([]byte, error) {
+				crv := getECDSACurve(keyType)
+				privKey, err := ecdsa.GenerateKey(crv, rand.Reader)
+				require.NoError(t, err)
+
+				pubKey := &cryptoapi.PublicKey{
+					X:     privKey.X.Bytes(),
+					Y:     privKey.Y.Bytes(),
+					Curve: crv.Params().Name,
+					Type:  "EC",
+				}
+
+				return json.Marshal(pubKey)
+			},
+			expectType: &ecdsa.PublicKey{},
+		},
+	}
+
+	for _, tc := range tt {
+		for _, keyType := range tc.keyTypes {
+			t.Run(string(keyType), func(t *testing.T) {
+				pkBytes, err := tc.getKey(keyType)
+				require.NoError(t, err)
+
+				pk, err := PubKeyBytesToKey(pkBytes, keyType)
+				require.NoError(t, err)
+
+				require.IsType(t, tc.expectType, pk)
+			})
+		}
+	}
+
+	t.Run("Secp256k1DER parse errors", func(t *testing.T) {
+		t.Run("asn.1 data invalid", func(t *testing.T) {
+			pkb := []byte("foo bar baz")
+
+			pk, err := PubKeyBytesToKey(pkb, kms.ECDSASecp256k1TypeDER)
+			require.Error(t, err)
+			require.Nil(t, pk)
+		})
+
+		t.Run("asn.1 input has trailing data", func(t *testing.T) {
+			priv, err := btcec.NewPrivateKey(btcec.S256())
+			require.NoError(t, err)
+
+			pubKey := priv.PubKey()
+
+			pkb, err := marshalSecp256k1DER((*ecdsa.PublicKey)(pubKey))
+			require.NoError(t, err)
+
+			pkb = append(pkb, 0, 0, 1, 1)
+
+			pk, err := PubKeyBytesToKey(pkb, kms.ECDSASecp256k1TypeDER)
+			require.Error(t, err)
+			require.Nil(t, pk)
+		})
+
+		t.Run("not Secp256k1 key", func(t *testing.T) {
+			priv, err := ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+			require.NoError(t, err)
+
+			pubKey := priv.PublicKey
+
+			pkb, err := marshalSecp256k1DER(&pubKey)
+			require.NoError(t, err)
+
+			pkb = append(pkb, 0, 0, 1, 1)
+
+			pk, err := PubKeyBytesToKey(pkb, kms.ECDSASecp256k1TypeDER)
+			require.Error(t, err)
+			require.Nil(t, pk)
+		})
+	})
+
+	t.Run("invalid key type", func(t *testing.T) {
+		pkb := []byte("foo bar baz")
+
+		pk, err := PubKeyBytesToKey(pkb, "foo bar")
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "invalid key type")
+		require.Nil(t, pk)
+	})
+}
+
 func TestPubKeyBytesToJWK(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -627,4 +809,33 @@ func TestPublicKeyFromJWK(t *testing.T) {
 		_, err = PublicKeyFromJWK(nil)
 		require.EqualError(t, err, "publicKeyFromJWK: jwk is empty")
 	})
+}
+
+type PublicKeyInfo struct {
+	Raw       asn1.RawContent
+	Algorithm pkix.AlgorithmIdentifier
+	PublicKey asn1.BitString
+}
+
+func marshalSecp256k1DER(pub *ecdsa.PublicKey) ([]byte, error) {
+	publicKeyBytes := elliptic.Marshal(pub.Curve, pub.X, pub.Y)
+
+	pki := PublicKeyInfo{
+		Algorithm: pkix.AlgorithmIdentifier{
+			Algorithm: asn1.ObjectIdentifier{
+				2, 0, // incorrect but syntactically valid data to allow asn.1 marshal to succeed
+			},
+		},
+		PublicKey: asn1.BitString{
+			Bytes:     publicKeyBytes,
+			BitLength: 8 * len(publicKeyBytes),
+		},
+	}
+
+	out, err := asn1.Marshal(pki)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
 }

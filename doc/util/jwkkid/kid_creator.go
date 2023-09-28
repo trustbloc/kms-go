@@ -9,17 +9,12 @@ package jwkkid
 import (
 	"crypto"
 	"crypto/ecdsa"
-	"crypto/ed25519"
 	"crypto/elliptic"
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math/big"
-
-	"github.com/btcsuite/btcd/btcec"
-	hybrid "github.com/google/tink/go/hybrid/subtle"
 
 	"github.com/trustbloc/kms-go/util/cryptoutil"
 
@@ -90,23 +85,18 @@ func secp256k1Thumbprint(keyBytes []byte, kt kms.KeyType) (string, error) {
 		return "", fmt.Errorf("secp256k1Thumbprint: invalid key type: %s", kt)
 	}
 
-	j, err := BuildJWK(keyBytes, kt)
+	k, err := jwksupport.PubKeyBytesToKey(keyBytes, kt)
 	if err != nil {
 		return "", fmt.Errorf("secp256k1Thumbprint: failed to build jwk: %w", err)
 	}
 
 	var input string
 
-	switch key := j.Key.(type) {
+	switch key := k.(type) {
 	case *ecdsa.PublicKey:
 		input, err = secp256k1ThumbprintInput(key.Curve, key.X, key.Y)
 		if err != nil {
 			return "", fmt.Errorf("secp256k1Thumbprint: failed to get public key thumbprint input: %w", err)
-		}
-	case *ecdsa.PrivateKey:
-		input, err = secp256k1ThumbprintInput(key.Curve, key.X, key.Y)
-		if err != nil {
-			return "", fmt.Errorf("secp256k1Thumbprint: failed to get private key thumbprint input: %w", err)
 		}
 	default:
 		return "", fmt.Errorf("secp256k1Thumbprint: unknown key type '%T'", key)
@@ -178,101 +168,17 @@ func curveSize(crv elliptic.Curve) int {
 
 // BuildJWK builds a go jose JWK from keyBytes with key type kt.
 func BuildJWK(keyBytes []byte, kt kms.KeyType) (*jwk.JWK, error) { //nolint: gocyclo
-	var (
-		j   *jwk.JWK
-		err error
-	)
-
 	switch kt {
-	case kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER, kms.ECDSASecp256k1DER:
-		j, err = generateJWKFromDERECDSA(keyBytes)
-		if err != nil {
-			return nil, fmt.Errorf("buildJWK: failed to build JWK from ecdsa DER key: %w", err)
-		}
-	case kms.ED25519Type:
-		j, err = jwksupport.JWKFromKey(ed25519.PublicKey(keyBytes))
-		if err != nil {
-			return nil, fmt.Errorf("buildJWK: failed to build JWK from ed25519 key: %w", err)
-		}
-	case kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363, kms.ECDSASecp256k1IEEEP1363:
-		c := getCurveByKMSKeyType(kt)
-		x, y := elliptic.Unmarshal(c, keyBytes)
-
-		pubKey := &ecdsa.PublicKey{
-			Curve: c,
-			X:     x,
-			Y:     y,
-		}
-
-		j, err = jwksupport.JWKFromKey(pubKey)
-		if err != nil {
-			return nil, fmt.Errorf("buildJWK: failed to build JWK from ecdsa key in IEEE1363 format: %w", err)
-		}
-	case kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType:
-		j, err = generateJWKFromECDH(keyBytes)
-		if err != nil {
-			return nil, fmt.Errorf("buildJWK: failed to build JWK from ecdh key: %w", err)
-		}
-	case kms.X25519ECDHKWType:
-		pubKey, err := unmarshalECDHKey(keyBytes)
-		if err != nil {
-			return nil, fmt.Errorf("buildJWK: failed to unmarshal public key from X25519 key: %w", err)
-		}
-
-		j, err = jwksupport.JWKFromX25519Key(pubKey.X)
-		if err != nil {
-			return nil, fmt.Errorf("buildJWK: failed to build JWK from X25519 key: %w", err)
-		}
+	case
+		kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER,
+		kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363,
+		kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType,
+		kms.ECDSASecp256k1DER, kms.ECDSASecp256k1IEEEP1363,
+		kms.ED25519Type, kms.X25519ECDHKWType, kms.BLS12381G2Type:
+		return jwksupport.PubKeyBytesToJWK(keyBytes, kt)
 	default:
 		return nil, fmt.Errorf("buildJWK: %w: '%s'", errInvalidKeyType, kt)
 	}
-
-	return j, nil
-}
-
-func generateJWKFromDERECDSA(keyBytes []byte) (*jwk.JWK, error) {
-	pubKey, err := x509.ParsePKIXPublicKey(keyBytes)
-	if err != nil {
-		return nil, fmt.Errorf("generateJWKFromDERECDSA: failed to parse ecdsa key in DER format: %w", err)
-	}
-
-	return jwksupport.JWKFromKey(pubKey)
-}
-
-func generateJWKFromECDH(keyBytes []byte) (*jwk.JWK, error) {
-	compositeKey, err := unmarshalECDHKey(keyBytes)
-	if err != nil {
-		return nil, fmt.Errorf("generateJWKFromECDH: %w", err)
-	}
-
-	c, err := hybrid.GetCurve(compositeKey.Curve)
-	if err != nil {
-		return nil, fmt.Errorf("generateJWKFromECDH: failed to get Curve for ECDH key: %w", err)
-	}
-
-	pubKey := &ecdsa.PublicKey{
-		Curve: c,
-		X:     new(big.Int).SetBytes(compositeKey.X),
-		Y:     new(big.Int).SetBytes(compositeKey.Y),
-	}
-
-	return jwksupport.JWKFromKey(pubKey)
-}
-
-func getCurveByKMSKeyType(kt kms.KeyType) elliptic.Curve {
-	switch kt {
-	case kms.ECDSAP256TypeIEEEP1363:
-		return elliptic.P256()
-	case kms.ECDSAP384TypeIEEEP1363:
-		return elliptic.P384()
-	case kms.ECDSAP521TypeIEEEP1363:
-		return elliptic.P521()
-	case kms.ECDSASecp256k1TypeIEEEP1363:
-		return btcec.S256()
-	}
-
-	// should never be called but added for linting
-	return elliptic.P256()
 }
 
 func unmarshalECDHKey(keyBytes []byte) (*cryptoapi.PublicKey, error) {
