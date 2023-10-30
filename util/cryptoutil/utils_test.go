@@ -48,7 +48,7 @@ func TestDeriveKEK_Util(t *testing.T) {
 	copy(chachaKey2[:], lowOrderPoint)
 	// test error from curve25519.X25519() call in DeriveECDHX25519()
 	_, err = DeriveECDHX25519(chachaKey, chachaKey2)
-	require.EqualError(t, err, "deriveECDHX25519: bad input point: low order point")
+	require.EqualError(t, err, "deriveECDHX25519: crypto/ecdh: bad X25519 remote ECDH input: low order point")
 }
 
 func TestNonceGeneration(t *testing.T) {

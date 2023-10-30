@@ -112,7 +112,8 @@ func Test_okpKWSupportFailures(t *testing.T) {
 	require.EqualError(t, err, "deriveSender1Pu: recipient key not OKP type")
 
 	_, err = okpKW.deriveSender1Pu("", nil, nil, nil, []byte{}, []byte{}, []byte{}, 0)
-	require.EqualError(t, err, "deriveSender1Pu: deriveECDHX25519: bad input point: low order point")
+	require.EqualError(t, err,
+		"deriveSender1Pu: deriveECDHX25519: crypto/ecdh: bad X25519 remote ECDH input: low order point")
 
 	derivedKEK, err := curve25519.X25519(kekBytes, curve25519.Basepoint)
 	require.NoError(t, err)
@@ -125,7 +126,8 @@ func Test_okpKWSupportFailures(t *testing.T) {
 	}
 
 	_, err = okpKW.deriveSender1Pu("", nil, nil, nil, derivedKEK, kekBytes, lowOrderPoint, 0)
-	require.EqualError(t, err, "deriveSender1Pu: deriveECDHX25519: bad input point: low order point")
+	require.EqualError(t, err,
+		"deriveSender1Pu: deriveECDHX25519: crypto/ecdh: bad X25519 remote ECDH input: low order point")
 	// can't reproduce key derivation error with sender key because recipient public key as lowOrderPoint fails for
 	// ephemeral key derivation. ie sender key derivation failure only fails if ephemeral key derivation fails.
 
@@ -139,7 +141,8 @@ func Test_okpKWSupportFailures(t *testing.T) {
 	require.EqualError(t, err, "deriveRecipient1Pu: recipient key not OKP type")
 
 	_, err = okpKW.deriveRecipient1Pu("", nil, nil, nil, []byte{}, []byte{}, []byte{}, 0)
-	require.EqualError(t, err, "deriveRecipient1Pu: deriveECDHX25519: bad input point: low order point")
+	require.EqualError(t, err,
+		"deriveRecipient1Pu: deriveECDHX25519: crypto/ecdh: bad X25519 remote ECDH input: low order point")
 }
 
 type mockKey struct {
