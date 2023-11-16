@@ -18,7 +18,7 @@ import (
 	"math/big"
 	"strings"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 	"golang.org/x/crypto/ed25519"
@@ -79,11 +79,13 @@ func (j *JWK) PublicKeyBytes() ([]byte, error) { //nolint:gocyclo
 			ecPubKey = &j.Key.(*ecdsa.PrivateKey).PublicKey
 		}
 
-		pubKey := &btcec.PublicKey{
-			Curve: btcec.S256(),
-			X:     ecPubKey.X,
-			Y:     ecPubKey.Y,
-		}
+		x := &btcec.FieldVal{}
+		x.SetByteSlice(ecPubKey.X.Bytes())
+
+		y := &btcec.FieldVal{}
+		y.SetByteSlice(ecPubKey.Y.Bytes())
+
+		pubKey := btcec.NewPublicKey(x, y)
 
 		return pubKey.SerializeCompressed(), nil
 	}

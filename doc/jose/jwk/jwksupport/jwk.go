@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
@@ -70,8 +70,7 @@ func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { 
 		return bytes, nil
 	case kms.BLS12381G2Type:
 		return bbs12381g2pub.UnmarshalPublicKey(bytes)
-	case kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363,
-		kms.ECDSASecp256k1TypeIEEEP1363:
+	case kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363:
 		crv := getECDSACurve(keyType)
 		x, y := elliptic.Unmarshal(crv, bytes)
 
@@ -80,6 +79,14 @@ func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { 
 			X:     x,
 			Y:     y,
 		}, nil
+	case kms.ECDSASecp256k1TypeIEEEP1363:
+		pubKey, err := btcec.ParsePubKey(bytes)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse ecdsa secp 256k1 in IEEEP1363 format: %w", err)
+		}
+
+		return pubKey.ToECDSA(), nil
+
 	case kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER:
 		pubKey, err := x509.ParsePKIXPublicKey(bytes)
 		if err != nil {
@@ -205,7 +212,7 @@ func parseSecp256k1DER(keyBytes []byte) (*ecdsa.PublicKey, error) {
 		return nil, fmt.Errorf("x509: trailing data after ASN.1 of public-key")
 	}
 
-	pubKey, err = btcec.ParsePubKey(pki.PublicKey.RightAlign(), btcec.S256())
+	pubKey, err = btcec.ParsePubKey(pki.PublicKey.RightAlign())
 	if err != nil {
 		return nil, err
 	}
