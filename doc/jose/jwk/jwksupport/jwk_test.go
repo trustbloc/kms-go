@@ -21,7 +21,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/stretchr/testify/require"
 	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
@@ -215,6 +215,31 @@ func TestDecodeJWK(t *testing.T) {
 					require.Equal(t, "Ed25519", newJWK.Crv)
 					require.Equal(t, ed25519.PublicKeySize, len(newJWK.Key.(ed25519.PublicKey)))
 					require.Equal(t, okpKty, newJWK.Kty)
+				case "get public key bytes EC SECP256K1 JWK":
+					jwkKey8, err := JWKFromKey(jwkKey.Key)
+					require.NoError(t, err)
+					require.NotNil(t, jwkKey8)
+					require.Equal(t, btcec.S256().Params().Name, jwkKey8.Crv)
+					require.Equal(t, "EC", jwkKey8.Kty)
+					ecKey, ok := jwkKey8.Key.(*ecdsa.PublicKey)
+					require.True(t, ok)
+					require.Equal(t, "YRrvJocKf39GpdTnd-zBFE0msGDqawR-Cmtc6yKoFsM",
+						base64.RawURLEncoding.EncodeToString(ecKey.X.Bytes()))
+					require.Equal(t, "kE-dMH9S3mxnTXo0JFEhraCU_tVYFDfpu9tpP1LfVKQ",
+						base64.RawURLEncoding.EncodeToString(ecKey.Y.Bytes()))
+
+					newJWK, err := PubKeyBytesToJWK(pkBytes, kms.ECDSASecp256k1TypeIEEEP1363)
+					require.NoError(t, err)
+					require.NotNil(t, newJWK)
+					require.Equal(t, btcec.S256().Params().Name, newJWK.Crv)
+					require.Equal(t, "EC", newJWK.Kty)
+					ecKey, ok = newJWK.Key.(*ecdsa.PublicKey)
+					require.True(t, ok)
+					require.Equal(t, "YRrvJocKf39GpdTnd-zBFE0msGDqawR-Cmtc6yKoFsM",
+						base64.RawURLEncoding.EncodeToString(ecKey.X.Bytes()))
+					require.Equal(t, "kE-dMH9S3mxnTXo0JFEhraCU_tVYFDfpu9tpP1LfVKQ",
+						base64.RawURLEncoding.EncodeToString(ecKey.Y.Bytes()))
+
 				case "get public key bytes EC P-256 JWK":
 					jwkKey4, err := JWKFromKey(jwkKey.Key)
 					require.NoError(t, err)
@@ -413,14 +438,14 @@ func TestPubKeyBytesToKey(t *testing.T) {
 				kms.ECDSASecp256k1TypeDER,
 			},
 			getKey: func(keyType kms.KeyType) ([]byte, error) {
-				priv, err := btcec.NewPrivateKey(btcec.S256())
+				priv, err := btcec.NewPrivateKey()
 				if err != nil {
 					return nil, err
 				}
 
 				pubKey := priv.PubKey()
 
-				return marshalSecp256k1DER((*ecdsa.PublicKey)(pubKey))
+				return marshalSecp256k1DER(pubKey.ToECDSA())
 			},
 			expectType: &ecdsa.PublicKey{},
 		},
@@ -471,13 +496,21 @@ func TestPubKeyBytesToKey(t *testing.T) {
 			require.Nil(t, pk)
 		})
 
+		t.Run("data invalid", func(t *testing.T) {
+			pkb := []byte("foo bar baz")
+
+			pk, err := PubKeyBytesToKey(pkb, kms.ECDSASecp256k1TypeIEEEP1363)
+			require.Error(t, err)
+			require.Nil(t, pk)
+		})
+
 		t.Run("asn.1 input has trailing data", func(t *testing.T) {
-			priv, err := btcec.NewPrivateKey(btcec.S256())
+			priv, err := btcec.NewPrivateKey()
 			require.NoError(t, err)
 
 			pubKey := priv.PubKey()
 
-			pkb, err := marshalSecp256k1DER((*ecdsa.PublicKey)(pubKey))
+			pkb, err := marshalSecp256k1DER(pubKey.ToECDSA())
 			require.NoError(t, err)
 
 			pkb = append(pkb, 0, 0, 1, 1)

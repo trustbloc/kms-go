@@ -14,7 +14,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/btcsuite/btcd/btcec"
+	"github.com/btcsuite/btcd/btcec/v2"
 	"github.com/go-jose/go-jose/v3"
 	"github.com/go-jose/go-jose/v3/json"
 	"github.com/stretchr/testify/require"
