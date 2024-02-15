@@ -10,6 +10,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
+	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
@@ -99,6 +100,12 @@ func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { 
 		}
 
 		return ecKey, nil
+	case kms.RSARS256, kms.RSAPS256:
+		pubKeyRsa, err := x509.ParsePKIXPublicKey(bytes)
+		if err != nil {
+			return nil, errors.New("rsa: invalid public key")
+		}
+		return pubKeyRsa, nil
 	case kms.ECDSASecp256k1TypeDER:
 		return parseSecp256k1DER(bytes)
 	case kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType:
@@ -165,7 +172,8 @@ func PubKeyBytesToJWK(bytes []byte, keyType kms.KeyType) (*jwk.JWK, error) {
 		kms.ECDSASecp256k1TypeIEEEP1363, kms.ECDSASecp256k1TypeDER,
 		kms.ECDSAP256TypeIEEEP1363, kms.ECDSAP384TypeIEEEP1363, kms.ECDSAP521TypeIEEEP1363,
 		kms.ECDSAP256TypeDER, kms.ECDSAP384TypeDER, kms.ECDSAP521TypeDER,
-		kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType:
+		kms.NISTP256ECDHKWType, kms.NISTP384ECDHKWType, kms.NISTP521ECDHKWType,
+		kms.RSARS256, kms.RSAPS256:
 		key, err := PubKeyBytesToKey(bytes, keyType)
 		if err != nil {
 			return nil, err
@@ -246,6 +254,9 @@ func PublicKeyFromJWK(jwkKey *jwk.JWK) (*cryptoapi.PublicKey, error) {
 			pubKey.X = bbsKey
 		case ed25519.PublicKey:
 			pubKey.X = key
+		case *rsa.PublicKey:
+			pubKey.N = key.N.Bytes()
+			pubKey.E = big.NewInt(int64(key.E)).Bytes()
 		case ed25519.PrivateKey:
 			var ok bool
 

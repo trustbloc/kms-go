@@ -11,6 +11,7 @@ import (
 	"crypto/ed25519"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -435,6 +436,21 @@ func TestPubKeyBytesToKey(t *testing.T) {
 		},
 		{
 			keyTypes: []kms.KeyType{
+				kms.RSARS256,
+				kms.RSAPS256,
+			},
+			getKey: func(keyType kms.KeyType) ([]byte, error) {
+				key, err := rsa.GenerateKey(rand.Reader, 2048)
+				if err != nil {
+					return nil, err
+				}
+
+				return x509.MarshalPKIXPublicKey(&key.PublicKey)
+			},
+			expectType: &rsa.PublicKey{},
+		},
+		{
+			keyTypes: []kms.KeyType{
 				kms.ECDSASecp256k1TypeDER,
 			},
 			getKey: func(keyType kms.KeyType) ([]byte, error) {
@@ -842,6 +858,24 @@ func TestPublicKeyFromJWK(t *testing.T) {
 		_, err = PublicKeyFromJWK(nil)
 		require.EqualError(t, err, "publicKeyFromJWK: jwk is empty")
 	})
+}
+
+func TestRSAKey(t *testing.T) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	pubBytes, err := x509.MarshalPKIXPublicKey(&key.PublicKey)
+	require.NoError(t, err)
+
+	resultJWK, err := PubKeyBytesToJWK(pubBytes, kms.RSARS256)
+	require.NoError(t, err)
+
+	pb, err := PublicKeyFromJWK(resultJWK)
+	require.NoError(t, err)
+	require.NotNil(t, pb)
+	require.NotNil(t, pb.N)
+	require.NotNil(t, pb.E)
+	require.Equal(t, "RSA", pb.Type)
 }
 
 type PublicKeyInfo struct {
