@@ -860,6 +860,12 @@ func TestPublicKeyFromJWK(t *testing.T) {
 	})
 }
 
+func TestRSAKeyFailParse(t *testing.T) {
+	resultJWK, err := PubKeyBytesToJWK([]byte{0x1}, kms.RSARS256)
+	require.ErrorContains(t, err, "rsa: invalid public key")
+	require.Nil(t, resultJWK)
+}
+
 func TestRSAKey(t *testing.T) {
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
 	require.NoError(t, err)

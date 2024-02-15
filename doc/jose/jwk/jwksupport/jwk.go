@@ -63,7 +63,7 @@ func JWKFromKey(opaqueKey interface{}) (*jwk.JWK, error) {
 // PubKeyBytesToKey creates an opaque key struct from the given public key bytes.
 // It's e.g. *ecdsa.PublicKey, *ecdsa.PrivateKey, ed25519.VerificationMethod, *bbs12381g2pub.PrivateKey or
 // *bbs12381g2pub.PublicKey.
-func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { // nolint:gocyclo
+func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { // nolint:gocyclo,funlen
 	switch keyType {
 	case kms.ED25519Type:
 		return ed25519.PublicKey(bytes), nil
@@ -105,6 +105,7 @@ func PubKeyBytesToKey(bytes []byte, keyType kms.KeyType) (interface{}, error) { 
 		if err != nil {
 			return nil, errors.New("rsa: invalid public key")
 		}
+
 		return pubKeyRsa, nil
 	case kms.ECDSASecp256k1TypeDER:
 		return parseSecp256k1DER(bytes)
