@@ -100,6 +100,8 @@ type RecipientWrappedKey struct {
 type PublicKey struct {
 	KID   string `json:"kid,omitempty"`
 	X     []byte `json:"x,omitempty"`
+	N     []byte `json:"n,omitempty"`
+	E     []byte `json:"e,omitempty"`
 	Y     []byte `json:"y,omitempty"`
 	Curve string `json:"curve,omitempty"`
 	Type  string `json:"type,omitempty"`
