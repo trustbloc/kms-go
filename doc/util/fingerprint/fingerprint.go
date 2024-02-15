@@ -10,6 +10,8 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -36,6 +38,9 @@ const (
 	// P521PubKeyMultiCodec for NIST P-521 public key in multicodec table.
 	P521PubKeyMultiCodec = 0x1202
 
+	// RSAPubKeyMultiCodec for RSA public key in multicodec table.
+	RSAPubKeyMultiCodec = 0x1205
+
 	// Default BLS 12-381 public key length in G2 field.
 	bls12381G2PublicKeyLen = 96
 
@@ -61,7 +66,7 @@ func CreateDIDKeyByCode(code uint64, pubKey []byte) (string, string) {
 
 // CreateDIDKeyByJwk creates a did:key ID using the multicodec key fingerprint as per the did:key format spec found at:
 // https://w3c-ccg.github.io/did-method-key/#format.
-func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) {
+func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) { //nolint:gocyclo
 	if jsonWebKey == nil {
 		return "", "", fmt.Errorf("jsonWebKey is required")
 	}
@@ -104,6 +109,16 @@ func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) {
 		default:
 			return "", "", fmt.Errorf("unexpected OKP key type %T", key)
 		}
+	case "RSA":
+		key, ok := jsonWebKey.Key.(*rsa.PublicKey)
+		if !ok {
+			return "", "", fmt.Errorf("unexpected RSA key type %T", jsonWebKey.Key)
+		}
+
+		didKey, keyID := CreateDIDKeyByCode(RSAPubKeyMultiCodec, x509.MarshalPKCS1PublicKey(key))
+
+		return didKey, keyID, nil
+
 	default:
 		return "", "", fmt.Errorf("unsupported kty %s", jsonWebKey.Kty)
 	}
