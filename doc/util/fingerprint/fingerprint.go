@@ -123,48 +123,6 @@ func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) {
 	}
 }
 
-func encodeRSAPublicKey(modulus []byte, leadingZero bool, bits int) []byte {
-	var header []byte
-	if leadingZero {
-		// If leading zero is required to ensure the modulus is positive in ASN.1/DER encoding,
-		// we add a zero byte at the beginning of the modulus.
-		modulus = append([]byte{0}, modulus...)
-	}
-
-	exponent := []byte{2, 3, 1, 0, 1} // Public exponent 65537 in DER encoding
-
-	// Construct the modulus part of the sequence
-	modulusLen := len(modulus)
-	modulusHeader := []byte{2} // INTEGER type
-	if modulusLen > 127 {
-		modulusHeader = append(modulusHeader, byte(0x82), byte(modulusLen>>8), byte(modulusLen&0xFF))
-	} else {
-		modulusHeader = append(modulusHeader, byte(modulusLen))
-	}
-	modulusSeq := append(modulusHeader, modulus...)
-
-	// Construct the full sequence with modulus and exponent
-	body := append(modulusSeq, exponent...)
-	seqLen := len(body)
-	if bits == 2048 {
-		header = []byte{48} // SEQUENCE type
-		if seqLen > 127 {
-			header = append(header, byte(0x82), byte(seqLen>>8), byte(seqLen&0xFF))
-		} else {
-			header = append(header, byte(seqLen))
-		}
-	} else if bits == 4096 {
-		header = []byte{48} // SEQUENCE type
-		if seqLen > 127 {
-			header = append(header, byte(0x82), byte(seqLen>>8), byte(seqLen&0xFF))
-		} else {
-			header = append(header, byte(seqLen))
-		}
-	}
-
-	return append(header, body...)
-}
-
 func ecCodeAndCurve(ecCurve string) (uint64, elliptic.Curve, error) {
 	var (
 		curve elliptic.Curve
