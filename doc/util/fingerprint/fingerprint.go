@@ -66,7 +66,7 @@ func CreateDIDKeyByCode(code uint64, pubKey []byte) (string, string) {
 
 // CreateDIDKeyByJwk creates a did:key ID using the multicodec key fingerprint as per the did:key format spec found at:
 // https://w3c-ccg.github.io/did-method-key/#format.
-func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) {
+func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) { //nolint:gocyclo
 	if jsonWebKey == nil {
 		return "", "", fmt.Errorf("jsonWebKey is required")
 	}
@@ -116,6 +116,7 @@ func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) {
 		}
 
 		didKey, keyID := CreateDIDKeyByCode(RSAPubKeyMultiCodec, x509.MarshalPKCS1PublicKey(key))
+
 		return didKey, keyID, nil
 
 	default:
