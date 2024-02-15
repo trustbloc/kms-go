@@ -10,13 +10,17 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/rsa"
 	"encoding/base64"
+	"fmt"
 	"math/big"
 	"strings"
 	"testing"
 
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/go-jose/go-jose/v3"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/trustbloc/kms-go/doc/jose/jwk"
@@ -301,6 +305,53 @@ func TestCreateDIDKeyByJwk(t *testing.T) {
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "unsupported kty")
 	})
+}
+
+func TestRSAFingerprint(t *testing.T) {
+	testKeys := []struct {
+		bitCount       int
+		expectedPrefix string
+	}{
+		{
+			bitCount:       2048,
+			expectedPrefix: "did:key:z4MX",
+		},
+		{
+			bitCount:       4096,
+			expectedPrefix: "did:key:zgg",
+		},
+	}
+
+	for _, testKey := range testKeys {
+		t.Run(fmt.Sprint("RSA-", testKey.bitCount), func(t *testing.T) {
+			key, err := rsa.GenerateKey(rand.Reader, testKey.bitCount)
+			require.NoError(t, err)
+
+			jwkKey, err := jwksupport.JWKFromKey(&key.PublicKey)
+			require.NoError(t, err)
+
+			didKey, keyID, err := CreateDIDKeyByJwk(jwkKey)
+			require.NoError(t, err)
+
+			assert.NotEmpty(t, didKey)
+			assert.NotEmpty(t, keyID)
+			assert.True(t, strings.HasPrefix(didKey, testKey.expectedPrefix))
+		})
+	}
+}
+
+func TestRSAInvalidKey(t *testing.T) {
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	require.NoError(t, err)
+
+	jwkKey, err := jwksupport.JWKFromKey(&key.PublicKey)
+	require.NoError(t, err)
+
+	jwkKey.Key = "invalid key type"
+	didKey, keyID, err := CreateDIDKeyByJwk(jwkKey)
+	require.Empty(t, didKey)
+	require.Empty(t, keyID)
+	require.ErrorContains(t, err, "unexpected RSA key type string")
 }
 
 func TestDIDKeyEd25519(t *testing.T) {

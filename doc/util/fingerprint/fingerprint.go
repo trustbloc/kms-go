@@ -10,6 +10,8 @@ import (
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/elliptic"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -35,6 +37,9 @@ const (
 	P384PubKeyMultiCodec = 0x1201
 	// P521PubKeyMultiCodec for NIST P-521 public key in multicodec table.
 	P521PubKeyMultiCodec = 0x1202
+
+	// RSAPubKeyMultiCodec for RSA public key in multicodec table.
+	RSAPubKeyMultiCodec = 0x1205
 
 	// Default BLS 12-381 public key length in G2 field.
 	bls12381G2PublicKeyLen = 96
@@ -104,9 +109,60 @@ func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) {
 		default:
 			return "", "", fmt.Errorf("unexpected OKP key type %T", key)
 		}
+	case "RSA":
+		key, ok := jsonWebKey.Key.(*rsa.PublicKey)
+		if !ok {
+			return "", "", fmt.Errorf("unexpected RSA key type %T", jsonWebKey.Key)
+		}
+
+		didKey, keyID := CreateDIDKeyByCode(RSAPubKeyMultiCodec, x509.MarshalPKCS1PublicKey(key))
+		return didKey, keyID, nil
+
 	default:
 		return "", "", fmt.Errorf("unsupported kty %s", jsonWebKey.Kty)
 	}
+}
+
+func encodeRSAPublicKey(modulus []byte, leadingZero bool, bits int) []byte {
+	var header []byte
+	if leadingZero {
+		// If leading zero is required to ensure the modulus is positive in ASN.1/DER encoding,
+		// we add a zero byte at the beginning of the modulus.
+		modulus = append([]byte{0}, modulus...)
+	}
+
+	exponent := []byte{2, 3, 1, 0, 1} // Public exponent 65537 in DER encoding
+
+	// Construct the modulus part of the sequence
+	modulusLen := len(modulus)
+	modulusHeader := []byte{2} // INTEGER type
+	if modulusLen > 127 {
+		modulusHeader = append(modulusHeader, byte(0x82), byte(modulusLen>>8), byte(modulusLen&0xFF))
+	} else {
+		modulusHeader = append(modulusHeader, byte(modulusLen))
+	}
+	modulusSeq := append(modulusHeader, modulus...)
+
+	// Construct the full sequence with modulus and exponent
+	body := append(modulusSeq, exponent...)
+	seqLen := len(body)
+	if bits == 2048 {
+		header = []byte{48} // SEQUENCE type
+		if seqLen > 127 {
+			header = append(header, byte(0x82), byte(seqLen>>8), byte(seqLen&0xFF))
+		} else {
+			header = append(header, byte(seqLen))
+		}
+	} else if bits == 4096 {
+		header = []byte{48} // SEQUENCE type
+		if seqLen > 127 {
+			header = append(header, byte(0x82), byte(seqLen>>8), byte(seqLen&0xFF))
+		} else {
+			header = append(header, byte(seqLen))
+		}
+	}
+
+	return append(header, body...)
 }
 
 func ecCodeAndCurve(ecCurve string) (uint64, elliptic.Curve, error) {
