@@ -16,7 +16,7 @@ require (
 	github.com/google/tink/go v1.7.0
 	github.com/stretchr/testify v1.8.2
 	github.com/teserakt-io/golang-ed25519 v0.0.0-20210104091850-3888c087a4c8
-	github.com/trustbloc/bbs-signature-go v1.0.2-0.20240117165819-e99610e107f4
+	github.com/trustbloc/bbs-signature-go v1.0.2
 	golang.org/x/crypto v0.17.0
 	google.golang.org/protobuf v1.28.1
 )
