@@ -31,6 +31,7 @@ func newWriter(kmsStore kmsapi.Store, opts ...kmsapi.PrivateKeyOpts) *storeWrite
 	return &storeWriter{
 		storage:           kmsStore,
 		requestedKeysetID: pOpts.KsID(),
+		metadata:          pOpts.Metadata(),
 	}
 }
 
@@ -39,6 +40,7 @@ type storeWriter struct {
 	storage kmsapi.Store
 	//
 	requestedKeysetID string
+	metadata          map[string]any
 	// KeysetID is set when Write() is called
 	KeysetID string
 }
@@ -61,7 +63,17 @@ func (l *storeWriter) Write(p []byte) (int, error) {
 		}
 	}
 
-	err = l.storage.Put(ksID, p)
+	if len(l.metadata) != 0 {
+		metadataStorage, ok := l.storage.(kmsapi.StoreWithMetadata)
+		if !ok {
+			return 0, fmt.Errorf("requested to save 'metadata', but storage doesn't support it")
+		}
+
+		err = metadataStorage.PutWithMetadata(ksID, p, l.metadata)
+	} else {
+		err = l.storage.Put(ksID, p)
+	}
+
 	if err != nil {
 		return 0, err
 	}

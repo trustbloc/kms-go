@@ -79,6 +79,16 @@ type Store interface {
 	Delete(keysetID string) error
 }
 
+// StoreWithMetadata defines extended storage capability to work with key's metadata.
+type StoreWithMetadata interface {
+	// PutWithMetadata stores the given key and metadata under the given keysetID.
+	PutWithMetadata(keysetID string, key []byte, metadata map[string]any) error
+	// GetWithMetadata retrieves the key and its' metadata stored under the given keysetID.
+	// If no key is found, the returned error is expected to wrap ErrKeyNotFound.
+	// KMS implementations may check to see if the error wraps that error type for certain operations.
+	GetWithMetadata(keysetID string) (key []byte, metadata map[string]any, err error)
+}
+
 // Provider for KeyManager builder/constructor.
 type Provider interface {
 	StorageProvider() Store
