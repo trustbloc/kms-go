@@ -8,7 +8,8 @@ package kms
 
 // keyOpts holds options for Create, Rotate and CreateAndExportPubKeyBytes.
 type keyOpts struct {
-	attrs []string
+	attrs    []string
+	metadata map[string]any
 }
 
 // NewKeyOpt creates a new empty key option.
@@ -25,6 +26,11 @@ func (pk *keyOpts) Attrs() []string {
 	return pk.attrs
 }
 
+// Metadata gets the additional data to be stored along with the key.
+func (pk *keyOpts) Metadata() map[string]any {
+	return pk.metadata
+}
+
 // KeyOpts are the create key option.
 type KeyOpts func(opts *keyOpts)
 
@@ -32,5 +38,12 @@ type KeyOpts func(opts *keyOpts)
 func WithAttrs(attrs []string) KeyOpts {
 	return func(opts *keyOpts) {
 		opts.attrs = attrs
+	}
+}
+
+// WithMetadata option is for creating a key that can have additional metadata.
+func WithMetadata(metadata map[string]any) KeyOpts {
+	return func(opts *keyOpts) {
+		opts.metadata = metadata
 	}
 }

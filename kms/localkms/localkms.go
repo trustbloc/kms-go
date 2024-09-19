@@ -106,7 +106,7 @@ func (l *LocalKMS) Create(kt kmsapi.KeyType, opts ...kmsapi.KeyOpts) (string, in
 		return "", nil, fmt.Errorf("create: failed to create new keyset handle: %w", err)
 	}
 
-	keyID, err := l.storeKeySet(kh, kt)
+	keyID, err := l.storeKeySet(kh, kt, opts...)
 	if err != nil {
 		return "", nil, fmt.Errorf("create: failed to store keyset: %w", err)
 	}
@@ -120,6 +120,15 @@ func (l *LocalKMS) Create(kt kmsapi.KeyType, opts ...kmsapi.KeyOpts) (string, in
 //   - error if failure
 func (l *LocalKMS) Get(keyID string) (interface{}, error) {
 	return l.getKeySet(keyID)
+}
+
+// GetWithOpts key handle for the given keyID
+// Returns:
+//   - handle instance (to private key)
+//   - metadata if any saved
+//   - error if failure
+func (l *LocalKMS) GetWithOpts(keyID string, opts ...kmsapi.ExportKeyOpts) (any, map[string]any, error) {
+	return l.getKeySetWithOpts(keyID, opts...)
 }
 
 // Rotate a key referenced by keyID and return a new handle of a keyset including old key and
@@ -164,7 +173,7 @@ func (l *LocalKMS) Rotate(kt kmsapi.KeyType, keyID string, opts ...kmsapi.KeyOpt
 	return newID, updatedKH, nil
 }
 
-func (l *LocalKMS) storeKeySet(kh *keyset.Handle, kt kmsapi.KeyType) (string, error) {
+func (l *LocalKMS) storeKeySet(kh *keyset.Handle, kt kmsapi.KeyType, opts ...kmsapi.KeyOpts) (string, error) {
 	var (
 		kid string
 		err error
@@ -192,13 +201,19 @@ func (l *LocalKMS) storeKeySet(kh *keyset.Handle, kt kmsapi.KeyType) (string, er
 		return "", fmt.Errorf("storeKeySet: failed to write json key to buffer: %w", err)
 	}
 
+	keyOpts := kmsapi.NewKeyOpt()
+
+	for _, opt := range opts {
+		opt(keyOpts)
+	}
+
 	// asymmetric keys are JWK thumbprints of the public key, base64URL encoded stored in kid.
 	// symmetric keys will have a randomly generated key ID (where kid is empty)
 	if kid != "" {
-		return writeToStore(l.store, buf, kmsapi.WithKeyID(kid))
+		return writeToStore(l.store, buf, kmsapi.WithKeyID(kid), kmsapi.ImportWithMetadata(keyOpts.Metadata()))
 	}
 
-	return writeToStore(l.store, buf)
+	return writeToStore(l.store, buf, kmsapi.ImportWithMetadata(keyOpts.Metadata()))
 }
 
 func writeToStore(store kmsapi.Store, buf *bytes.Buffer, opts ...kmsapi.PrivateKeyOpts) (string, error) {
@@ -226,6 +241,21 @@ func (l *LocalKMS) getKeySet(id string) (*keyset.Handle, error) {
 	}
 
 	return kh, nil
+}
+
+func (l *LocalKMS) getKeySetWithOpts(id string, opts ...kmsapi.ExportKeyOpts) (*keyset.Handle, map[string]any, error) {
+	localDBReader := newReader(l.store, id, opts...)
+
+	jsonKeysetReader := keyset.NewJSONReader(localDBReader)
+
+	// Read reads the encrypted keyset handle back from the io.reader implementation
+	// and decrypts it using primaryKeyEnvAEAD.
+	kh, err := keyset.Read(jsonKeysetReader, l.primaryKeyEnvAEAD)
+	if err != nil {
+		return nil, nil, fmt.Errorf("getKeySet: failed to read json keyset from reader: %w", err)
+	}
+
+	return kh, localDBReader.metadata, nil
 }
 
 // ExportPubKeyBytes will fetch a key referenced by id then gets its public key in raw bytes and returns it.
