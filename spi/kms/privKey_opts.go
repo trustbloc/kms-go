@@ -50,17 +50,25 @@ func ImportWithMetadata(metadata map[string]any) PrivateKeyOpts {
 
 // exportKeyOpts holds options for ExportPubKey.
 type exportKeyOpts struct {
-	getMetadata bool
+	getMetadata    bool
+	associatedData []byte
 }
 
 // NewExportOpt creates a new empty export pub key option.
 func NewExportOpt() *exportKeyOpts { // nolint
-	return &exportKeyOpts{}
+	return &exportKeyOpts{
+		associatedData: []byte{},
+	}
 }
 
 // GetMetadata indicates that metadata have to be exported along with the key.
 func (pk *exportKeyOpts) GetMetadata() bool {
 	return pk.getMetadata
+}
+
+// AssociatedData returns associated data for the key.
+func (pk *exportKeyOpts) AssociatedData() []byte {
+	return pk.associatedData
 }
 
 // ExportKeyOpts are the export public key option.
@@ -70,5 +78,12 @@ type ExportKeyOpts func(opts *exportKeyOpts)
 func ExportWithMetadata(getMetadata bool) ExportKeyOpts {
 	return func(opts *exportKeyOpts) {
 		opts.getMetadata = getMetadata
+	}
+}
+
+// ExportAssociatedData option is for exporting key saved using associated data.
+func ExportAssociatedData(associatedData []byte) ExportKeyOpts {
+	return func(opts *exportKeyOpts) {
+		opts.associatedData = associatedData
 	}
 }

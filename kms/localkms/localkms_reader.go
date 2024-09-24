@@ -24,19 +24,21 @@ func newReader(store kms.Store, keysetID string, opts ...kmsapi.ExportKeyOpts) *
 	}
 
 	return &storeReader{
-		storage:     store,
-		keysetID:    keysetID,
-		getMetadata: pOpts.GetMetadata(),
+		storage:        store,
+		keysetID:       keysetID,
+		getMetadata:    pOpts.GetMetadata(),
+		associatedData: pOpts.AssociatedData(),
 	}
 }
 
 // storeReader struct to load a keyset from a local storage.
 type storeReader struct {
-	buf         *bytes.Buffer
-	storage     kms.Store
-	keysetID    string
-	getMetadata bool
-	metadata    map[string]any
+	buf            *bytes.Buffer
+	storage        kms.Store
+	keysetID       string
+	getMetadata    bool
+	metadata       map[string]any
+	associatedData []byte
 }
 
 // Read the keyset from local storage into p.

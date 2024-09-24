@@ -16,11 +16,10 @@ import (
 
 	"github.com/google/tink/go/aead"
 	"github.com/google/tink/go/keyset"
+	"github.com/google/tink/go/tink"
 	"github.com/trustbloc/bbs-signature-go/bbs12381g2pub"
 
 	kmsapi "github.com/trustbloc/kms-go/spi/kms"
-
-	"github.com/trustbloc/kms-go/spi/secretlock"
 
 	cryptoapi "github.com/trustbloc/kms-go/spi/crypto"
 
@@ -50,28 +49,43 @@ var errInvalidKeyType = errors.New("key type is not supported")
 // It uses an underlying secret lock service (default local secretLock) to wrap (encrypt) keys
 // prior to storing them.
 type LocalKMS struct {
-	secretLock        secretlock.Service
-	primaryKeyURI     string
 	store             kmsapi.Store
 	primaryKeyEnvAEAD *aead.KMSEnvelopeAEAD
 }
 
 // New will create a new (local) KMS service.
 func New(primaryKeyURI string, p kmsapi.Provider) (*LocalKMS, error) {
-	secretLock := p.SecretLock()
+	return NewWithOpts(
+		WithPrimaryKeyURI(primaryKeyURI),
+		WithStore(p.StorageProvider()),
+		WithSecretLock(p.SecretLock()))
+}
 
-	kw, err := keywrapper.New(secretLock, primaryKeyURI)
-	if err != nil {
-		return nil, fmt.Errorf("new: failed to create new keywrapper: %w", err)
+// NewWithOpts will create a new KMS service with options.
+func NewWithOpts(opts ...KMSOpts) (*LocalKMS, error) {
+	options := NewKMSOpt()
+
+	for _, opt := range opts {
+		opt(options)
 	}
 
-	// create a KMSEnvelopeAEAD instance to wrap/unwrap keys managed by LocalKMS
-	keyEnvelopeAEAD := aead.NewKMSEnvelopeAEAD2(aead.AES256GCMKeyTemplate(), kw)
+	var aeadService tink.AEAD
+
+	if options.AEADService() != nil {
+		aeadService = options.AEADService()
+	} else {
+		kw, err := keywrapper.New(options.SecretLock(), options.PrimaryKeyURI())
+		if err != nil {
+			return nil, fmt.Errorf("new: failed to create new keywrapper: %w", err)
+		}
+
+		aeadService = kw
+	}
+
+	keyEnvelopeAEAD := aead.NewKMSEnvelopeAEAD2(aead.AES256GCMKeyTemplate(), aeadService)
 
 	return &LocalKMS{
-			store:             p.StorageProvider(),
-			secretLock:        secretLock,
-			primaryKeyURI:     primaryKeyURI,
+			store:             options.Store(),
 			primaryKeyEnvAEAD: keyEnvelopeAEAD,
 		},
 		nil
@@ -138,7 +152,13 @@ func (l *LocalKMS) GetWithOpts(keyID string, opts ...kmsapi.ExportKeyOpts) (any,
 //   - handle instance (to private key)
 //   - error if failure
 func (l *LocalKMS) Rotate(kt kmsapi.KeyType, keyID string, opts ...kmsapi.KeyOpts) (string, interface{}, error) {
-	kh, err := l.getKeySet(keyID)
+	keyOpts := kmsapi.NewKeyOpt()
+
+	for _, opt := range opts {
+		opt(keyOpts)
+	}
+
+	kh, _, err := l.getKeySetWithOpts(keyID, kmsapi.ExportAssociatedData(keyOpts.AssociatedData()))
 	if err != nil {
 		return "", nil, fmt.Errorf("rotate: failed to getKeySet: %w", err)
 	}
@@ -165,7 +185,7 @@ func (l *LocalKMS) Rotate(kt kmsapi.KeyType, keyID string, opts ...kmsapi.KeyOpt
 		return "", nil, fmt.Errorf("rotate: failed to delete entry for kid '%s': %w", keyID, err)
 	}
 
-	newID, err := l.storeKeySet(updatedKH, kt)
+	newID, err := l.storeKeySet(updatedKH, kt, opts...)
 	if err != nil {
 		return "", nil, fmt.Errorf("rotate: failed to store keySet: %w", err)
 	}
@@ -193,18 +213,18 @@ func (l *LocalKMS) storeKeySet(kh *keyset.Handle, kt kmsapi.KeyType, opts ...kms
 		}
 	}
 
-	buf := new(bytes.Buffer)
-	jsonKeysetWriter := keyset.NewJSONWriter(buf)
-
-	err = kh.Write(jsonKeysetWriter, l.primaryKeyEnvAEAD)
-	if err != nil {
-		return "", fmt.Errorf("storeKeySet: failed to write json key to buffer: %w", err)
-	}
-
 	keyOpts := kmsapi.NewKeyOpt()
 
 	for _, opt := range opts {
 		opt(keyOpts)
+	}
+
+	buf := new(bytes.Buffer)
+	jsonKeysetWriter := keyset.NewJSONWriter(buf)
+
+	err = kh.WriteWithAssociatedData(jsonKeysetWriter, l.primaryKeyEnvAEAD, keyOpts.AssociatedData())
+	if err != nil {
+		return "", fmt.Errorf("storeKeySet: failed to write json key to buffer: %w", err)
 	}
 
 	// asymmetric keys are JWK thumbprints of the public key, base64URL encoded stored in kid.
@@ -229,18 +249,8 @@ func writeToStore(store kmsapi.Store, buf *bytes.Buffer, opts ...kmsapi.PrivateK
 }
 
 func (l *LocalKMS) getKeySet(id string) (*keyset.Handle, error) {
-	localDBReader := newReader(l.store, id)
-
-	jsonKeysetReader := keyset.NewJSONReader(localDBReader)
-
-	// Read reads the encrypted keyset handle back from the io.reader implementation
-	// and decrypts it using primaryKeyEnvAEAD.
-	kh, err := keyset.Read(jsonKeysetReader, l.primaryKeyEnvAEAD)
-	if err != nil {
-		return nil, fmt.Errorf("getKeySet: failed to read json keyset from reader: %w", err)
-	}
-
-	return kh, nil
+	ks, _, err := l.getKeySetWithOpts(id)
+	return ks, err
 }
 
 func (l *LocalKMS) getKeySetWithOpts(id string, opts ...kmsapi.ExportKeyOpts) (*keyset.Handle, map[string]any, error) {
@@ -250,7 +260,7 @@ func (l *LocalKMS) getKeySetWithOpts(id string, opts ...kmsapi.ExportKeyOpts) (*
 
 	// Read reads the encrypted keyset handle back from the io.reader implementation
 	// and decrypts it using primaryKeyEnvAEAD.
-	kh, err := keyset.Read(jsonKeysetReader, l.primaryKeyEnvAEAD)
+	kh, err := keyset.ReadWithAssociatedData(jsonKeysetReader, l.primaryKeyEnvAEAD, localDBReader.associatedData)
 	if err != nil {
 		return nil, nil, fmt.Errorf("getKeySet: failed to read json keyset from reader: %w", err)
 	}
