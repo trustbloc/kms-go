@@ -17,12 +17,14 @@ import (
 	kmsapi "github.com/trustbloc/kms-go/spi/kms"
 )
 
+const (
+	keyID = "foo"
+)
+
 func TestKeyCreator(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		keyBytes, _, err := ed25519.GenerateKey(rand.Reader)
 		require.NoError(t, err)
-
-		keyID := "foo"
 
 		creator := newKeyCreator(&mockkms.KeyManager{
 			CrAndExportPubKeyValue: keyBytes,
@@ -44,8 +46,6 @@ func TestKeyCreator(t *testing.T) {
 	t.Run("success export", func(t *testing.T) {
 		keyBytes, _, err := ed25519.GenerateKey(rand.Reader)
 		require.NoError(t, err)
-
-		keyID := "foo"
 
 		creator := newKeyCreator(&mockkms.KeyManager{
 			ExportPubKeyTypeValue:  kmsapi.ED25519Type,
@@ -77,7 +77,7 @@ func TestKeyCreator(t *testing.T) {
 
 	t.Run("kms exports invalid key value", func(t *testing.T) {
 		creator := newKeyCreator(&mockkms.KeyManager{
-			CrAndExportPubKeyValue: []byte("foo"),
+			CrAndExportPubKeyValue: []byte(keyID),
 		})
 
 		pubJWK, err := creator.Create(kmsapi.ECDSAP256DER)
