@@ -28,6 +28,10 @@ func (k *kmsCryptoImpl) Create(keyType kms.KeyType) (*jwk.JWK, error) {
 	return createKey(k.kms, keyType)
 }
 
+func (k *kmsCryptoImpl) ExportPubKeyBytes(id string) ([]byte, kms.KeyType, error) {
+	return k.kms.ExportPubKeyBytes(id)
+}
+
 func (k *kmsCryptoImpl) Sign(msg []byte, pub *jwk.JWK) ([]byte, error) {
 	kh, err := k.kms.Get(pub.KeyID)
 	if err != nil {

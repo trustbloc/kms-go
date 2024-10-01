@@ -41,6 +41,7 @@ type KMSCryptoVerifier interface {
 // KeyCreator creates keypairs in the wrapped KMS, returning public keys in JWK format.
 type KeyCreator interface {
 	Create(keyType kmsapi.KeyType) (*jwk.JWK, error)
+	ExportPubKeyBytes(id string) ([]byte, kmsapi.KeyType, error)
 }
 
 // KMSCrypto provides wrapped kms and crypto operations.
