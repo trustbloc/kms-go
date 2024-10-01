@@ -35,6 +35,10 @@ func (k *kmsCrypto) Create(keyType kms.KeyType) (*jwk.JWK, error) {
 	return pk, nil
 }
 
+func (k *kmsCrypto) ExportPubKeyBytes(id string) ([]byte, kms.KeyType, error) {
+	return k.km.ExportPubKeyBytes(id)
+}
+
 func (k *kmsCrypto) CreateRaw(keyType kms.KeyType) (string, interface{}, error) {
 	kid, pkBytes, err := k.km.CreateAndExportPubKeyBytes(keyType)
 	if err != nil {

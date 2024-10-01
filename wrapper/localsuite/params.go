@@ -39,6 +39,7 @@ type keyHandleFetcher interface {
 
 type keyCreator interface {
 	CreateAndExportPubKeyBytes(kt kmsapi.KeyType, opts ...kmsapi.KeyOpts) (string, []byte, error)
+	ExportPubKeyBytes(id string) ([]byte, kmsapi.KeyType, error)
 }
 
 type keyManager interface {

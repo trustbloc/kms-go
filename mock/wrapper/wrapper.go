@@ -15,6 +15,9 @@ import (
 // MockKMSCrypto mocks wrapper.KMSCrypto.
 type MockKMSCrypto struct {
 	CreateVal         *jwk.JWK
+	PubKeyBytes       []byte
+	PubKeyType        kms.KeyType
+	PubKeyErr         error
 	CreateRawKID      string
 	CreateRawVal      interface{}
 	CreateErr         error
@@ -33,6 +36,11 @@ type MockKMSCrypto struct {
 // Create mock.
 func (m *MockKMSCrypto) Create(keyType kms.KeyType) (*jwk.JWK, error) {
 	return m.CreateVal, m.CreateErr
+}
+
+// ExportPubKeyBytes mock.
+func (m *MockKMSCrypto) ExportPubKeyBytes(id string) ([]byte, kms.KeyType, error) {
+	return m.PubKeyBytes, m.PubKeyType, m.PubKeyErr
 }
 
 // CreateRaw mock.

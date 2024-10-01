@@ -12,16 +12,19 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	mockkms "github.com/trustbloc/kms-go/mock/kms"
 	kmsapi "github.com/trustbloc/kms-go/spi/kms"
+)
+
+const (
+	keyID = "foo"
 )
 
 func TestKeyCreator(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
 		keyBytes, _, err := ed25519.GenerateKey(rand.Reader)
 		require.NoError(t, err)
-
-		keyID := "foo"
 
 		creator := newKeyCreator(&mockkms.KeyManager{
 			CrAndExportPubKeyValue: keyBytes,
@@ -38,6 +41,21 @@ func TestKeyCreator(t *testing.T) {
 		require.NotNil(t, pubRaw)
 		require.Equal(t, keyID, kid)
 		require.IsType(t, ed25519.PublicKey{}, pubRaw)
+	})
+
+	t.Run("success export", func(t *testing.T) {
+		keyBytes, _, err := ed25519.GenerateKey(rand.Reader)
+		require.NoError(t, err)
+
+		creator := newKeyCreator(&mockkms.KeyManager{
+			ExportPubKeyTypeValue:  kmsapi.ED25519Type,
+			ExportPubKeyBytesValue: keyBytes,
+		})
+
+		pubJWK, keyType, err := creator.ExportPubKeyBytes(keyID)
+		require.NoError(t, err)
+		require.EqualValues(t, kmsapi.ED25519Type, keyType)
+		require.NotNil(t, pubJWK)
 	})
 
 	t.Run("kms create err", func(t *testing.T) {
@@ -59,7 +77,7 @@ func TestKeyCreator(t *testing.T) {
 
 	t.Run("kms exports invalid key value", func(t *testing.T) {
 		creator := newKeyCreator(&mockkms.KeyManager{
-			CrAndExportPubKeyValue: []byte("foo"),
+			CrAndExportPubKeyValue: []byte(keyID),
 		})
 
 		pubJWK, err := creator.Create(kmsapi.ECDSAP256DER)
