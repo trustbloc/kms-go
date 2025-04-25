@@ -25,7 +25,7 @@ func TestLocalKMSWriter(t *testing.T) {
 		keys := map[string][]byte{}
 		mockStore := &inMemoryKMSStore{keys: keys}
 
-		for i := 0; i < 256; i++ {
+		for i := range 256 {
 			l := newWriter(mockStore)
 			require.NotEmpty(t, l)
 			someKey := random.GetRandomBytes(uint32(32))

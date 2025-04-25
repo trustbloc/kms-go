@@ -10,6 +10,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/x509"
+	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
@@ -35,7 +36,7 @@ import (
 // associated with it.
 func PublicKeyBytesToHandle(pubKey []byte, kt kms.KeyType, opts ...kms.KeyOpts) (*keyset.Handle, error) {
 	if len(pubKey) == 0 {
-		return nil, fmt.Errorf("pubKey is empty")
+		return nil, errors.New("pubKey is empty")
 	}
 
 	marshalledKey, tURL, err := getMarshalledProtoKeyAndKeyURL(pubKey, kt, opts...)
@@ -210,7 +211,7 @@ func getMarshalledProtoKeyAndKeyURL(pubKey []byte, kt kms.KeyType,
 			return nil, "", err
 		}
 	default:
-		return nil, "", fmt.Errorf("invalid key type")
+		return nil, "", errors.New("invalid key type")
 	}
 
 	return keyValue, tURL, nil
@@ -220,7 +221,7 @@ func getMarshalledECDSADERKey(marshaledPubKey []byte, curveName string, c common
 	h commonpb.HashType) ([]byte, error) {
 	curve := subtle.GetCurve(curveName)
 	if curve == nil {
-		return nil, fmt.Errorf("undefined curve")
+		return nil, errors.New("undefined curve")
 	}
 
 	pubKey, err := x509.ParsePKIXPublicKey(marshaledPubKey)
@@ -230,7 +231,7 @@ func getMarshalledECDSADERKey(marshaledPubKey []byte, curveName string, c common
 
 	ecPubKey, ok := pubKey.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("public key reader: not an ecdsa public key")
+		return nil, errors.New("public key reader: not an ecdsa public key")
 	}
 
 	params := &ecdsapb.EcdsaParams{
@@ -246,7 +247,7 @@ func getMarshalledECDSASecp256K1DERKey(marshaledPubKey []byte, curveName string,
 	h commonpb.HashType) ([]byte, error) {
 	curve := secp256k1subtle.GetCurve(curveName)
 	if curve == nil {
-		return nil, fmt.Errorf("undefined curve")
+		return nil, errors.New("undefined curve")
 	}
 
 	pubKey, err := x509.ParsePKIXPublicKey(marshaledPubKey)
@@ -256,7 +257,7 @@ func getMarshalledECDSASecp256K1DERKey(marshaledPubKey []byte, curveName string,
 
 	ecPubKey, ok := pubKey.(*ecdsa.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("public key reader: not an ecdsa public key")
+		return nil, errors.New("public key reader: not an ecdsa public key")
 	}
 
 	params := &secp256k1pb.Secp256K1Params{
@@ -272,13 +273,13 @@ func getMarshalledECDSAIEEEP1363Key(marshaledPubKey []byte, curveName string, c 
 	h commonpb.HashType) ([]byte, error) {
 	curve := subtle.GetCurve(curveName)
 	if curve == nil {
-		return nil, fmt.Errorf("undefined curve")
+		return nil, errors.New("undefined curve")
 	}
 
 	x, y := elliptic.Unmarshal(curve, marshaledPubKey)
 
 	if x == nil || y == nil {
-		return nil, fmt.Errorf("failed to unamrshal public ecdsa key")
+		return nil, errors.New("failed to unamrshal public ecdsa key")
 	}
 
 	params := &ecdsapb.EcdsaParams{
@@ -294,13 +295,13 @@ func getMarshalledECDSASecp256K1IEEEP1363Key(marshaledPubKey []byte, curveName s
 	h commonpb.HashType) ([]byte, error) {
 	curve := secp256k1subtle.GetCurve(curveName)
 	if curve == nil {
-		return nil, fmt.Errorf("undefined curve")
+		return nil, errors.New("undefined curve")
 	}
 
 	x, y := elliptic.Unmarshal(curve, marshaledPubKey)
 
 	if x == nil || y == nil {
-		return nil, fmt.Errorf("failed to unamrshal public ecdsa key")
+		return nil, errors.New("failed to unamrshal public ecdsa key")
 	}
 
 	params := &secp256k1pb.Secp256K1Params{

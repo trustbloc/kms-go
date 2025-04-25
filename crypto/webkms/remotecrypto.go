@@ -423,7 +423,7 @@ func (r *RemoteCrypto) ComputeMAC(data []byte, keyURL interface{}) ([]byte, erro
 	if r.opts.ComputeMACCache != nil {
 		v, err := r.opts.ComputeMACCache.Get(keyHash)
 		if err == nil {
-			return v.([]byte), nil
+			return v.([]byte), nil //nolint:errcheck
 		}
 
 		if !errors.Is(err, gcache.KeyNotFoundError) {
@@ -542,7 +542,7 @@ func (r *RemoteCrypto) WrapKey(cek, apu, apv []byte, recPubKey *cryptoapi.Public
 		senderURLStr, ok := senderURL.(string)
 
 		if !ok {
-			return nil, fmt.Errorf("wrapKey invalid senderKey type, should be string with key URL")
+			return nil, errors.New("wrapKey invalid senderKey type, should be string with key URL")
 		}
 
 		// if senderURL is set, extract keyID and add it to the request url (for ECDH-1PU wrapping)

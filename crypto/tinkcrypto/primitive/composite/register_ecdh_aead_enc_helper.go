@@ -197,7 +197,7 @@ func (r *RegisterCompositeAEADEncHelper) GetAEAD(symmetricKeyValue []byte) (tink
 
 	g, ok := p.(tink.AEAD)
 	if !ok {
-		return nil, fmt.Errorf("invalid primitive")
+		return nil, errors.New("invalid primitive")
 	}
 
 	return g, nil

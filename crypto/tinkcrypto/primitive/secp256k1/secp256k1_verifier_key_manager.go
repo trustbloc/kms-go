@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package secp256k1
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/tink/go/keyset"
@@ -24,8 +25,8 @@ const (
 
 // common errors.
 var (
-	errInvalidsecp256k1VerifierKey     = fmt.Errorf("secp256k1_verifier_key_manager: invalid key")
-	errsecp256k1VerifierNotImplemented = fmt.Errorf("secp256k1_verifier_key_manager: not implemented")
+	errInvalidsecp256k1VerifierKey     = errors.New("secp256k1_verifier_key_manager: invalid key")
+	errsecp256k1VerifierNotImplemented = errors.New("secp256k1_verifier_key_manager: not implemented")
 )
 
 // secp256k1VerifierKeyManager is an implementation of KeyManager interface.

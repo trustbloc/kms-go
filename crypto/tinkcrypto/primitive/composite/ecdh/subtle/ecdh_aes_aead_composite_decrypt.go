@@ -8,7 +8,7 @@ package subtle
 
 import (
 	"encoding/json"
-	"fmt"
+	"errors"
 
 	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
 )
@@ -42,7 +42,7 @@ func (d *ECDHAEADCompositeDecrypt) Decrypt(ciphertext, aad []byte) ([]byte, erro
 	}
 
 	if d.cek == nil {
-		return nil, fmt.Errorf("ecdh decrypt: missing cek")
+		return nil, errors.New("ecdh decrypt: missing cek")
 	}
 
 	aead, err := d.encHelper.GetAEAD(d.cek)

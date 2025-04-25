@@ -51,7 +51,7 @@ type CryptoBox struct {
 func NewCryptoBox(w kms.KeyManager) (*CryptoBox, error) {
 	lkms, ok := w.(*LocalKMS)
 	if !ok {
-		return nil, fmt.Errorf("cannot use parameter argument as KMS")
+		return nil, errors.New("cannot use parameter argument as KMS")
 	}
 
 	return &CryptoBox{km: lkms}, nil

@@ -166,7 +166,7 @@ func createRecipients(t *testing.T, numberOfEntities int) ([]*cryptoapi.PublicKe
 	r := make([]*cryptoapi.PublicKey, 0)
 	rKH := make(map[string]*keyset.Handle)
 
-	for i := 0; i < numberOfEntities; i++ {
+	for i := range numberOfEntities {
 		mrKey, kh := createAndMarshalEntityKey(t)
 		ecPubKey := new(cryptoapi.PublicKey)
 		err := json.Unmarshal(mrKey, ecPubKey)

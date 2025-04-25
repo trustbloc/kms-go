@@ -9,6 +9,7 @@ package subtle
 import (
 	"bytes"
 	"encoding/asn1"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -19,13 +20,13 @@ import (
 func asn1encode(sig *Secp256k1Signature) ([]byte, error) {
 	ret, err := asn1.Marshal(*sig)
 	if err != nil {
-		return nil, fmt.Errorf("asn.1 encoding failed")
+		return nil, errors.New("asn.1 encoding failed")
 	}
 
 	return ret, nil
 }
 
-var errAsn1Decoding = fmt.Errorf("asn.1 decoding failed")
+var errAsn1Decoding = errors.New("asn.1 decoding failed")
 
 // asn1decode verifies the given ECDSA signature and decodes it if it is valid.
 // Since asn1.Unmarshal() doesn't do a strict verification on its input, it will
@@ -96,7 +97,7 @@ func ieeeP1363Encode(sig *Secp256k1Signature, curveName string) ([]byte, error) 
 
 func ieeeP1363Decode(encodedBytes []byte) (*Secp256k1Signature, error) {
 	if len(encodedBytes) == 0 || len(encodedBytes) > 132 || len(encodedBytes)%2 != 0 {
-		return nil, fmt.Errorf("ecdsa: Invalid IEEE_P1363 encoded bytes")
+		return nil, errors.New("ecdsa: Invalid IEEE_P1363 encoded bytes")
 	}
 
 	r := new(big.Int).SetBytes(encodedBytes[:len(encodedBytes)/2])

@@ -78,7 +78,7 @@ func (p *PubKeyWriter) Write(ks *tinkpb.Keyset) error {
 
 // WriteEncrypted writes the encrypted keyset to the underlying w.Writer.
 func (p *PubKeyWriter) WriteEncrypted(_ *tinkpb.EncryptedKeyset) error {
-	return fmt.Errorf("write encrypted function not supported")
+	return errors.New("write encrypted function not supported")
 }
 
 func (p *PubKeyWriter) write(msg *tinkpb.Keyset) error {
@@ -100,7 +100,7 @@ func (p *PubKeyWriter) write(msg *tinkpb.Keyset) error {
 	}
 
 	if !created {
-		return fmt.Errorf("key not written")
+		return errors.New("key not written")
 	}
 
 	return nil

@@ -218,7 +218,7 @@ func parseSecp256k1DER(keyBytes []byte) (*ecdsa.PublicKey, error) {
 	if rest, err = asn1.Unmarshal(keyBytes, &pki); err != nil {
 		return nil, err
 	} else if len(rest) != 0 {
-		return nil, fmt.Errorf("x509: trailing data after ASN.1 of public-key")
+		return nil, errors.New("x509: trailing data after ASN.1 of public-key")
 	}
 
 	pubKey, err = btcec.ParsePubKey(pki.PublicKey.RightAlign())

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package subtle
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite"
 	"github.com/trustbloc/kms-go/crypto/tinkcrypto/primitive/composite/api"
@@ -34,7 +34,7 @@ func NewECDHAEADCompositeEncrypt(encHelper composite.EncrypterHelper, cek []byte
 // Encrypt using composite ECDH with a Concat KDF key wrap and CBC+HMAC content encryption.
 func (e *ECDHAEADCompositeEncrypt) Encrypt(plaintext, aad []byte) ([]byte, error) {
 	if e.cek == nil {
-		return nil, fmt.Errorf("ecdhAEADCompositeEncrypt: missing cek")
+		return nil, errors.New("ecdhAEADCompositeEncrypt: missing cek")
 	}
 
 	aead, err := e.encHelper.GetAEAD(e.cek)

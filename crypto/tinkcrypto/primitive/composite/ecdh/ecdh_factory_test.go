@@ -98,7 +98,7 @@ func TestECDHESFactory(t *testing.T) {
 	xd, err := NewECDHDecrypt(xKHPriv)
 	require.NoError(t, err)
 
-	for i := 0; i < 1000; i++ {
+	for range 1000 {
 		pt := random.GetRandomBytes(20)
 		aadRndNb := random.GetRandomBytes(10)
 

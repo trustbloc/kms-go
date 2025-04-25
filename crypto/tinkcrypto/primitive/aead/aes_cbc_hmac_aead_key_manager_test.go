@@ -45,7 +45,7 @@ func TestNewKeyMultipleTimes(t *testing.T) {
 
 	const numTests = 24
 
-	for i := 0; i < numTests/2; i++ {
+	for range numTests / 2 {
 		k, err := keyManager.NewKey(keyTemplate.Value)
 		require.NoError(t, err)
 

@@ -146,7 +146,7 @@ func (t *Crypto) Decrypt(cipher, aad, nonce []byte, kh interface{}) ([]byte, err
 		}
 	}
 
-	return nil, fmt.Errorf("decrypt cipher: decryption failed")
+	return nil, errors.New("decrypt cipher: decryption failed")
 }
 
 // Sign will sign msg using the implementation's corresponding signing key referenced by kh of a private key.
@@ -298,7 +298,7 @@ func (t *Crypto) WrapKey(cek, apu, apv []byte, recPubKey *crypto.PublicKey,
 func (t *Crypto) UnwrapKey(recWK *crypto.RecipientWrappedKey, recipientKH interface{},
 	wrapKeyOpts ...crypto.WrapKeyOpts) ([]byte, error) {
 	if recWK == nil {
-		return nil, fmt.Errorf("unwrapKey: RecipientWrappedKey is empty")
+		return nil, errors.New("unwrapKey: RecipientWrappedKey is empty")
 	}
 
 	pOpts := crypto.NewOpt()

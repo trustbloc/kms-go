@@ -25,7 +25,7 @@ func TestSecp256K1VerifyGetPrimitiveBasic(t *testing.T) {
 	km, err := registry.GetKeyManager(secp256k1VerifierTypeURL)
 	require.NoError(t, err, "cannot obtain secp256K1Verifier key manager")
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		serializedKey, e := proto.Marshal(NewRandomSecp256K1PublicKey(testParams[i].hashType, testParams[i].curve))
 		require.NoError(t, e)
 
@@ -39,7 +39,7 @@ func TestECDSAVerifyGetPrimitiveWithInvalidInput(t *testing.T) {
 	km, err := registry.GetKeyManager(secp256k1VerifierTypeURL)
 	require.NoError(t, err)
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		serializedKey, e := proto.Marshal(NewRandomSecp256K1PrivateKey(testParams[i].hashType, testParams[i].curve))
 		if testParams[i].curve != secp256k1pb.BitcoinCurveType_INVALID_BITCOIN_CURVE {
 			require.NoError(t, e)

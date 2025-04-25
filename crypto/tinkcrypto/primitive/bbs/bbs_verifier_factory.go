@@ -104,7 +104,7 @@ func (wv *wrappedVerifier) Verify(messages [][]byte, signature []byte) error {
 	// try non-raw keys
 	entries, err := wv.ps.EntriesForPrefix(string(prefix))
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var verifier bbsapi.Verifier
 
 			verifier, err = toBBSVerifier(entries[i].Primitive)
@@ -122,7 +122,7 @@ func (wv *wrappedVerifier) Verify(messages [][]byte, signature []byte) error {
 	// try raw keys
 	entries, err = wv.ps.RawEntries()
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var verifier bbsapi.Verifier
 
 			verifier, err = toBBSVerifier(entries[i].Primitive)
@@ -149,7 +149,7 @@ func (wv *wrappedVerifier) VerifyProof(messages [][]byte, proof, nonce []byte) e
 	// try non-raw keys
 	entries, err := wv.ps.EntriesForPrefix(string(prefix))
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var verifier bbsapi.Verifier
 
 			verifier, err = toBBSVerifier(entries[i].Primitive)
@@ -167,7 +167,7 @@ func (wv *wrappedVerifier) VerifyProof(messages [][]byte, proof, nonce []byte) e
 	// try raw keys
 	entries, err = wv.ps.RawEntries()
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var verifier bbsapi.Verifier
 
 			verifier, err = toBBSVerifier(entries[i].Primitive)
@@ -196,7 +196,7 @@ func (wv *wrappedVerifier) DeriveProof(messages [][]byte, signature, nonce []byt
 	// try non-raw keys
 	entries, err := wv.ps.EntriesForPrefix(string(prefix))
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var (
 				verifier bbsapi.Verifier
 				proof    []byte
@@ -221,7 +221,7 @@ func (wv *wrappedVerifier) DeriveProof(messages [][]byte, signature, nonce []byt
 	// try raw keys
 	entries, err = wv.ps.RawEntries()
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var (
 				verifier bbsapi.Verifier
 				proof    []byte

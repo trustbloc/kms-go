@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"crypto/ecdsa"
 	"crypto/ed25519"
+	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/proto"
@@ -99,7 +100,7 @@ func (l *LocalKMS) importECDSAKey(privKey *ecdsa.PrivateKey, kt kms.KeyType,
 			Encoding: secp256k1pb.Secp256K1SignatureEncoding_Bitcoin_IEEE_P1363,
 		})
 	default:
-		return "", nil, fmt.Errorf("import private EC key failed: invalid ECDSA key type")
+		return "", nil, errors.New("import private EC key failed: invalid ECDSA key type")
 	}
 
 	mKeyValue, err := getMarshalledECDSAPrivateKey(privKey, params)
@@ -141,7 +142,7 @@ func (l *LocalKMS) buildAndImportECDSAPrivateKeyAsECDHKW(privKey *ecdsa.PrivateK
 
 	err := proto.Unmarshal(keyTemplate.Value, keyFormat)
 	if err != nil {
-		return "", nil, fmt.Errorf("invalid key format")
+		return "", nil, errors.New("invalid key format")
 	}
 
 	priv := &ecdhpb.EcdhAeadPrivateKey{
@@ -193,11 +194,11 @@ func getMarshalledECDSASecp256K1PrivateKey(privKey *ecdsa.PrivateKey,
 func (l *LocalKMS) importEd25519Key(privKey ed25519.PrivateKey, kt kms.KeyType,
 	opts ...kms.PrivateKeyOpts) (string, *keyset.Handle, error) {
 	if privKey == nil {
-		return "", nil, fmt.Errorf("import private ED25519 key failed: private key is nil")
+		return "", nil, errors.New("import private ED25519 key failed: private key is nil")
 	}
 
 	if kt != kms.ED25519Type {
-		return "", nil, fmt.Errorf("import private ED25519 key failed: invalid key type")
+		return "", nil, errors.New("import private ED25519 key failed: invalid key type")
 	}
 
 	privKeyProto, err := newProtoEd25519PrivateKey(privKey)
@@ -218,11 +219,11 @@ func (l *LocalKMS) importEd25519Key(privKey ed25519.PrivateKey, kt kms.KeyType,
 func (l *LocalKMS) importBBSKey(privKey *bbs12381g2pub.PrivateKey, kt kms.KeyType,
 	opts ...kms.PrivateKeyOpts) (string, *keyset.Handle, error) {
 	if privKey == nil {
-		return "", nil, fmt.Errorf("import private BBS+ key failed: private key is nil")
+		return "", nil, errors.New("import private BBS+ key failed: private key is nil")
 	}
 
 	if kt != kms.BLS12381G2Type {
-		return "", nil, fmt.Errorf("import private BBS+ key failed: invalid key type")
+		return "", nil, errors.New("import private BBS+ key failed: invalid key type")
 	}
 
 	privKeyProto, err := newProtoBBSPrivateKey(privKey, kt)
@@ -242,19 +243,19 @@ func (l *LocalKMS) importBBSKey(privKey *bbs12381g2pub.PrivateKey, kt kms.KeyTyp
 
 func validECPrivateKey(privateKey *ecdsa.PrivateKey) error {
 	if privateKey == nil {
-		return fmt.Errorf("private key is nil")
+		return errors.New("private key is nil")
 	}
 
 	if privateKey.X == nil {
-		return fmt.Errorf("private key's public key is missing x coordinate")
+		return errors.New("private key's public key is missing x coordinate")
 	}
 
 	if privateKey.Y == nil {
-		return fmt.Errorf("private key's public key is missing y coordinate")
+		return errors.New("private key's public key is missing y coordinate")
 	}
 
 	if privateKey.D == nil {
-		return fmt.Errorf("private key data is missing")
+		return errors.New("private key data is missing")
 	}
 
 	return nil
@@ -282,7 +283,7 @@ func newProtoECDSASecp256K1PrivateKey(publicKey *secp256k1pb.Secp256K1PublicKey,
 func newProtoEd25519PrivateKey(privateKey ed25519.PrivateKey) (*ed25519pb.Ed25519PrivateKey, error) {
 	pubKey, ok := (privateKey.Public()).(ed25519.PublicKey)
 	if !ok {
-		return nil, fmt.Errorf("public key from private key is not ed25519.PublicKey")
+		return nil, errors.New("public key from private key is not ed25519.PublicKey")
 	}
 
 	publicProto := &ed25519pb.Ed25519PublicKey{
@@ -354,7 +355,7 @@ func buidCLCredDefParams(kt kms.KeyType, opts ...kms.KeyOpts) *clpb.CLCredDefPar
 func (l *LocalKMS) writeImportedKey(ks *tinkpb.Keyset, opts ...kms.PrivateKeyOpts) (string, error) {
 	serializedKeyset, err := proto.Marshal(ks)
 	if err != nil {
-		return "", fmt.Errorf("invalid keyset data")
+		return "", errors.New("invalid keyset data")
 	}
 
 	encrypted, err := l.primaryKeyEnvAEAD.Encrypt(serializedKeyset, []byte{})
@@ -385,7 +386,7 @@ func (l *LocalKMS) writeImportedKey(ks *tinkpb.Keyset, opts ...kms.PrivateKeyOpt
 
 func getKeysetInfo(ks *tinkpb.Keyset) (*tinkpb.KeysetInfo, error) {
 	if ks == nil {
-		return nil, fmt.Errorf("keyset is nil")
+		return nil, errors.New("keyset is nil")
 	}
 
 	var keyInfos []*tinkpb.KeysetInfo_KeyInfo
@@ -407,7 +408,7 @@ func getKeysetInfo(ks *tinkpb.Keyset) (*tinkpb.KeysetInfo, error) {
 
 func getKeyInfo(key *tinkpb.Keyset_Key) (*tinkpb.KeysetInfo_KeyInfo, error) {
 	if key == nil {
-		return nil, fmt.Errorf("keyset key is nil")
+		return nil, errors.New("keyset key is nil")
 	}
 
 	return &tinkpb.KeysetInfo_KeyInfo{

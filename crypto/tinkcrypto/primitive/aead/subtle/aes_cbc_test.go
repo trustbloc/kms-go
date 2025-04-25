@@ -24,7 +24,7 @@ func TestNewAESCBC(t *testing.T) {
 	key := make([]byte, 64)
 
 	// Test various key sizes with a fixed IV size.
-	for i := 0; i < 64; i++ {
+	for i := range 64 {
 		k := key[:i]
 		c, err := subtle.NewAESCBC(k)
 
@@ -168,7 +168,7 @@ func TestMultipleEncrypt(t *testing.T) {
 	// Encrypt 100 times and verify that the result is 100 different ciphertexts.
 	ciphertexts := map[string]bool{}
 
-	for i := 0; i < 100; i++ {
+	for i := range 100 {
 		c, err := cbc.Encrypt(plaintext)
 		require.NoErrorf(t, err, fmt.Sprintf("encryption failed for iteration %d, error: %v", i, err))
 
@@ -233,7 +233,7 @@ func TestEncryptRandomMessage(t *testing.T) {
 	cbc, err := subtle.NewAESCBC(key)
 	require.NoError(t, err)
 
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		message := random.GetRandomBytes(uint32(i))
 		ciphertext, err := cbc.Encrypt(message)
 		require.NoError(t, err)
@@ -247,7 +247,7 @@ func TestEncryptRandomMessage(t *testing.T) {
 }
 
 func TestEncryptRandomKeyAndMessage(t *testing.T) {
-	for i := 0; i < 256; i++ {
+	for i := range 256 {
 		key := random.GetRandomBytes(16)
 
 		cbc, err := subtle.NewAESCBC(key)

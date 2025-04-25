@@ -21,7 +21,7 @@ import (
 // 'skid' JWE protected header/'kid' recipient header.
 type KIDResolver interface {
 	// Resolve a 'kid'/'skid' into a marshalled public key or error if key resolution fails.
-	Resolve(string) (*cryptoapi.PublicKey, error)
+	Resolve(kid string) (*cryptoapi.PublicKey, error)
 }
 
 // DIDKeyResolver resolves a 'kid'/'skid' containing a did:key value.

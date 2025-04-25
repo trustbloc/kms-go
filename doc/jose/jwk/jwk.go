@@ -76,7 +76,7 @@ func (j *JWK) PublicKeyBytes() ([]byte, error) { //nolint:gocyclo
 
 		ecPubKey, ok := j.Key.(*ecdsa.PublicKey)
 		if !ok {
-			ecPubKey = &j.Key.(*ecdsa.PrivateKey).PublicKey
+			ecPubKey = &j.Key.(*ecdsa.PrivateKey).PublicKey //nolint:errcheck
 		}
 
 		x := &btcec.FieldVal{}
@@ -190,7 +190,7 @@ func (j *JWK) KeyType() (kms.KeyType, error) {
 	case isSecp256k1(j.Algorithm, j.Kty, j.Crv):
 		return kms.ECDSASecp256k1TypeIEEEP1363, nil
 	default:
-		return "", fmt.Errorf("no keytype recognized for jwk")
+		return "", errors.New("no keytype recognized for jwk")
 	}
 }
 
@@ -206,7 +206,7 @@ func ecdsaPubKeyType(pub *ecdsa.PublicKey) (kms.KeyType, error) {
 		return kms.ECDSAP521TypeIEEEP1363, nil
 	}
 
-	return "", fmt.Errorf("no keytype recognized for ecdsa jwk")
+	return "", errors.New("no keytype recognized for ecdsa jwk")
 }
 
 func (j *JWK) isX25519() bool {

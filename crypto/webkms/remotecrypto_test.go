@@ -1403,9 +1403,9 @@ func validateHTTPMethod(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 
-	ct := r.Header.Get("Content-type")
+	ct := r.Header.Get("Content-Type")
 	if ct != webkmsimpl.ContentType && r.Method == http.MethodPost {
-		http.Error(w, fmt.Sprintf("Unsupported Content-type \"%s\"", ct), http.StatusUnsupportedMediaType)
+		http.Error(w, fmt.Sprintf("Unsupported Content-Type \"%s\"", ct), http.StatusUnsupportedMediaType)
 		return false
 	}
 
@@ -1557,9 +1557,9 @@ func (c *errFailingCloser) Close() error {
 func mockAddHeadersFuncSuccess(req *http.Request) (*http.Header, error) {
 	// mocking a call to an auth server to get necessary credentials.
 	// It only sets mock http.Header entries for testing purposes.
-	req.Header.Set("controller", "mockController")
-	req.Header.Set("authServerURL", "mockAuthServerURL")
-	req.Header.Set("secret", "mockSecret")
+	req.Header.Set("Controller", "mockController")
+	req.Header.Set("AuthServerURL", "mockAuthServerURL") //nolint:canonicalheader
+	req.Header.Set("Secret", "mockSecret")
 
 	return &req.Header, nil
 }

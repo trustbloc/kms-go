@@ -9,7 +9,6 @@ import (
 	"crypto/cipher"
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
 	"log"
 	"os"
@@ -63,7 +62,7 @@ func NewService(masterKeyReader io.Reader, secLock secretlock.Service) (secretlo
 	masterKeyData := make([]byte, masterKeyLen)
 
 	if masterKeyReader == nil {
-		return nil, fmt.Errorf("masterKeyReader is nil")
+		return nil, errors.New("masterKeyReader is nil")
 	}
 
 	n, err := masterKeyReader.Read(masterKeyData)
@@ -74,7 +73,7 @@ func NewService(masterKeyReader io.Reader, secLock secretlock.Service) (secretlo
 	}
 
 	if n == 0 {
-		return nil, fmt.Errorf("masterKeyReader is empty")
+		return nil, errors.New("masterKeyReader is empty")
 	}
 
 	var masterKey []byte
@@ -94,7 +93,6 @@ func NewService(masterKeyReader io.Reader, secLock secretlock.Service) (secretlo
 		masterKey, err = base64.URLEncoding.DecodeString(string(masterKeyData[:n]))
 		if err != nil {
 			// attempt to create a service using the key content from reader as is
-
 			masterKey = make([]byte, n)
 
 			// copy masterKey read from reader directly
@@ -135,7 +133,7 @@ func (s *Lock) Decrypt(keyURI string, req *secretlock.DecryptRequest) (*secretlo
 
 	// ensure ciphertext contains more than nonce+ciphertext (result from Encrypt())
 	if len(ct) <= int(nonceSize) {
-		return nil, fmt.Errorf("invalid request")
+		return nil, errors.New("invalid request")
 	}
 
 	nonce := ct[0:nonceSize]
