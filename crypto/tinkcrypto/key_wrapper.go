@@ -580,7 +580,7 @@ func (t *Crypto) convertRecKeyAndGenOrGetEPKEC(recPubKey *cryptoapi.PublicKey,
 			return nil, nil, fmt.Errorf("convertRecKeyAndGenOrGetEPKEC: failed to generate EPK: %w", err)
 		}
 
-		return recECPubKey, ephemeralPrivKey.(*ecdsa.PrivateKey), nil
+		return recECPubKey, ephemeralPrivKey.(*ecdsa.PrivateKey), nil //nolint:errcheck
 	}
 
 	return recECPubKey, &ecdsa.PrivateKey{

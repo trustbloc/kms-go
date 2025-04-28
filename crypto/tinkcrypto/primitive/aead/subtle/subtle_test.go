@@ -15,8 +15,7 @@ import (
 )
 
 func TestValidateAESKeySize(t *testing.T) {
-	var i uint32
-	for i = 0; i < 65; i++ {
+	for i := range uint32(65) {
 		err := subtle.ValidateAESKeySize(i)
 
 		switch i {

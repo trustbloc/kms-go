@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package bbs
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/tink/go/core/cryptofmt"
@@ -41,13 +42,13 @@ type wrappedSigner struct {
 // newWrappedSigner constructor creates a new wrappedSigner and checks primitives in ps are all of BBS Signer type.
 func newWrappedSigner(ps *primitiveset.PrimitiveSet) (*wrappedSigner, error) {
 	if _, ok := (ps.Primary.Primitive).(bbsapi.Signer); !ok {
-		return nil, fmt.Errorf("bbs_signer_factory: not a BBS Signer primitive")
+		return nil, errors.New("bbs_signer_factory: not a BBS Signer primitive")
 	}
 
 	for _, primitives := range ps.Entries {
 		for _, p := range primitives {
 			if _, ok := (p.Primitive).(bbsapi.Signer); !ok {
-				return nil, fmt.Errorf("bbs_signer_factory: not a BBS Signer primitive")
+				return nil, errors.New("bbs_signer_factory: not a BBS Signer primitive")
 			}
 		}
 	}
@@ -64,7 +65,7 @@ func (ws *wrappedSigner) Sign(messages [][]byte) ([]byte, error) {
 
 	signer, ok := (primary.Primitive).(bbsapi.Signer)
 	if !ok {
-		return nil, fmt.Errorf("bbs_signer_factory: not a BBS Signer primitive")
+		return nil, errors.New("bbs_signer_factory: not a BBS Signer primitive")
 	}
 
 	var dataToSign [][]byte

@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 package fingerprint
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -31,7 +32,7 @@ func getMethodSpecificID(did string) (string, error) {
 	parts := strings.SplitN(did, ":", 3)
 
 	if len(parts) < 3 {
-		return "", fmt.Errorf("invalid did")
+		return "", errors.New("invalid did")
 	}
 
 	return parts[2], nil

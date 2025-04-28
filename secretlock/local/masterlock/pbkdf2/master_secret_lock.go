@@ -10,7 +10,7 @@ import (
 	"crypto/cipher"
 	"crypto/sha256"
 	"encoding/base64"
-	"fmt"
+	"errors"
 	"hash"
 
 	"github.com/google/tink/go/subtle/random"
@@ -40,16 +40,16 @@ type masterLockPBKDF2 struct {
 // `local.NewService(masterKeyReader io.Reader, secLock secretlock.Service)`.
 func NewMasterLock(passphrase string, h func() hash.Hash, iterations int, salt []byte) (secretlock.Service, error) {
 	if passphrase == "" {
-		return nil, fmt.Errorf("passphrase is empty")
+		return nil, errors.New("passphrase is empty")
 	}
 
 	if h == nil {
-		return nil, fmt.Errorf("hash is nil")
+		return nil, errors.New("hash is nil")
 	}
 
 	size := h().Size()
 	if size > sha256.Size { // AEAD cipher requires at most sha256.Size
-		return nil, fmt.Errorf("hash size not supported")
+		return nil, errors.New("hash size not supported")
 	}
 
 	masterKey := pbkdf2.Key([]byte(passphrase), salt, iterations, sha256.Size, h)
@@ -91,7 +91,7 @@ func (m *masterLockPBKDF2) Decrypt(keyURI string, req *secretlock.DecryptRequest
 
 	// ensure ciphertext contains more than nonce+ciphertext (result from Encrypt())
 	if len(ct) <= int(nonceSize) {
-		return nil, fmt.Errorf("invalid request")
+		return nil, errors.New("invalid request")
 	}
 
 	nonce := ct[0:nonceSize]

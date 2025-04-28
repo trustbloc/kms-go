@@ -103,11 +103,11 @@ func (l *LocalKMS) HealthCheck() error {
 //   - error if failure
 func (l *LocalKMS) Create(kt kmsapi.KeyType, opts ...kmsapi.KeyOpts) (string, interface{}, error) {
 	if kt == "" {
-		return "", nil, fmt.Errorf("failed to create new key, missing key type")
+		return "", nil, errors.New("failed to create new key, missing key type")
 	}
 
 	if kt == kmsapi.ECDSASecp256k1DER {
-		return "", nil, fmt.Errorf("create: Unable to create kms key: Secp256K1 is not supported by DER format")
+		return "", nil, errors.New("create: Unable to create kms key: Secp256K1 is not supported by DER format")
 	}
 
 	keyTemplate, err := getKeyTemplate(kt, opts...)
@@ -374,7 +374,7 @@ func (l *LocalKMS) ImportPrivateKey(privKey interface{}, kt kmsapi.KeyType,
 	case *bbs12381g2pub.PrivateKey:
 		return l.importBBSKey(pk, kt, opts...)
 	default:
-		return "", nil, fmt.Errorf("import private key does not support this key type or key is public")
+		return "", nil, errors.New("import private key does not support this key type or key is public")
 	}
 }
 

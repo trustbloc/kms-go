@@ -973,7 +973,7 @@ func createRecipientsByKeyTemplate(t *testing.T, nbOfEntities int, kt *tinkpb.Ke
 	rKID := make([]string, 0)
 	rDIDKey := make([]string, 0)
 
-	for i := 0; i < nbOfEntities; i++ {
+	for range nbOfEntities {
 		mrKey, kh, kid, didKey := createAndMarshalEntityKey(t, kt, keyType)
 
 		ecPubKey := new(cryptoapi.PublicKey)

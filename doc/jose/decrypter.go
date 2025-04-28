@@ -10,6 +10,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -118,7 +119,7 @@ func fetchSKIDFromAPU(jwe *JSONWebEncryption) (string, bool) {
 	// use apu as skid instead.
 	if len(jwe.Recipients) > 1 {
 		if a, apuOK := jwe.ProtectedHeaders["apu"]; apuOK {
-			skidBytes, err := base64.RawURLEncoding.DecodeString(a.(string))
+			skidBytes, err := base64.RawURLEncoding.DecodeString(a.(string)) //nolint:errcheck
 			if err != nil {
 				return "", false
 			}
@@ -205,7 +206,7 @@ func (jd *JWEDecrypt) resolveKID(kid string) (*cryptoapi.PublicKey, error) {
 func (jd *JWEDecrypt) decryptJWE(jwe *JSONWebEncryption, cek []byte) ([]byte, error) {
 	encAlg, ok := jwe.ProtectedHeaders.Encryption()
 	if !ok {
-		return nil, fmt.Errorf("jwedecrypt: JWE 'enc' protected header is missing")
+		return nil, errors.New("jwedecrypt: JWE 'enc' protected header is missing")
 	}
 
 	decPrimitive, err := getECDHDecPrimitive(cek, EncAlg(encAlg), true)
@@ -245,18 +246,18 @@ func (jd *JWEDecrypt) fetchSenderPubKey(skid string, encAlg EncAlg) (*keyset.Han
 
 func (jd *JWEDecrypt) validateAndExtractProtectedHeaders(jwe *JSONWebEncryption) (string, error) {
 	if jwe == nil {
-		return "", fmt.Errorf("jwe is nil")
+		return "", errors.New("jwe is nil")
 	}
 
 	if len(jwe.ProtectedHeaders) == 0 {
-		return "", fmt.Errorf("jwe is missing protected headers")
+		return "", errors.New("jwe is missing protected headers")
 	}
 
 	protectedHeaders := jwe.ProtectedHeaders
 
 	encAlg, ok := protectedHeaders.Encryption()
 	if !ok {
-		return "", fmt.Errorf("jwe is missing encryption algorithm 'enc' header")
+		return "", errors.New("jwe is missing encryption algorithm 'enc' header")
 	}
 
 	switch encAlg {
@@ -419,7 +420,7 @@ func convertMarshalledJWKToRecKey(marshalledJWK []byte) (*cryptoapi.RecipientWra
 	case []byte:
 		epk.X = key
 	default:
-		return nil, fmt.Errorf("unsupported recipient key type")
+		return nil, errors.New("unsupported recipient key type")
 	}
 
 	return &cryptoapi.RecipientWrappedKey{

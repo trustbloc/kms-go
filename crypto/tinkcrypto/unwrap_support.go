@@ -29,7 +29,7 @@ func extractPrivKey(kh *keyset.Handle) (interface{}, error) {
 	nAEAD := &noopAEAD{}
 
 	if kh == nil {
-		return nil, fmt.Errorf("extractPrivKey: kh is nil")
+		return nil, errors.New("extractPrivKey: kh is nil")
 	}
 
 	err := kh.Write(w, nAEAD)
@@ -108,7 +108,7 @@ type privKeyWriter struct {
 
 // Write writes the public keyset to the underlying w.Writer. It's not used in this implementation.
 func (p *privKeyWriter) Write(_ *tinkpb.Keyset) error {
-	return fmt.Errorf("privKeyWriter: write function not supported")
+	return errors.New("privKeyWriter: write function not supported")
 }
 
 // WriteEncrypted writes the encrypted keyset to the underlying w.Writer.

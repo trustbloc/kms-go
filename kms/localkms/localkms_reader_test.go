@@ -66,7 +66,7 @@ func TestLocalKMSReader(t *testing.T) {
 		var veryLargeData []byte
 		dataLen := 1000 * 1000
 		blockSize := 512
-		for i := 0; i < dataLen; i++ {
+		for range dataLen {
 			veryLargeData = append(veryLargeData, 'a')
 		}
 

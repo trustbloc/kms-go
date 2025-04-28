@@ -45,13 +45,13 @@ var _ tink.Verifier = (*wrappedVerifier)(nil)
 
 func newWrappedVerifier(ps *primitiveset.PrimitiveSet) (*wrappedVerifier, error) {
 	if _, ok := (ps.Primary.Primitive).(tink.Verifier); !ok {
-		return nil, fmt.Errorf("verifier_factory: not a Verifier primitive")
+		return nil, errors.New("verifier_factory: not a Verifier primitive")
 	}
 
 	for _, primitives := range ps.Entries {
 		for _, p := range primitives {
 			if _, ok := (p.Primitive).(tink.Verifier); !ok {
-				return nil, fmt.Errorf("verifier_factory: not an Verifier primitive")
+				return nil, errors.New("verifier_factory: not an Verifier primitive")
 			}
 		}
 	}
@@ -78,7 +78,7 @@ func (v *wrappedVerifier) Verify(signature, data []byte) error {
 
 	entries, err := v.ps.EntriesForPrefix(string(prefix))
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			var signedData []byte
 			if entries[i].PrefixType == tinkpb.OutputPrefixType_LEGACY {
 				signedData = append(data, byte(0)) //nolint:gocritic
@@ -88,7 +88,7 @@ func (v *wrappedVerifier) Verify(signature, data []byte) error {
 
 			verifier, ok := (entries[i].Primitive).(tink.Verifier)
 			if !ok {
-				return fmt.Errorf("verifier_factory: not an Verifier primitive")
+				return errors.New("verifier_factory: not an Verifier primitive")
 			}
 
 			if err = verifier.Verify(signatureNoPrefix, signedData); err == nil {
@@ -100,10 +100,10 @@ func (v *wrappedVerifier) Verify(signature, data []byte) error {
 	// try raw keys
 	entries, err = v.ps.RawEntries()
 	if err == nil {
-		for i := 0; i < len(entries); i++ {
+		for i := range entries {
 			verifier, ok := (entries[i].Primitive).(tink.Verifier)
 			if !ok {
-				return fmt.Errorf("verifier_factory: not an Verifier primitive")
+				return errors.New("verifier_factory: not an Verifier primitive")
 			}
 
 			if err = verifier.Verify(signature, data); err == nil {

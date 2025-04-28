@@ -39,7 +39,7 @@ func TestSecp256k1SignerGetPrimitiveBasic(t *testing.T) {
 	km, err := registry.GetKeyManager(secp256k1SignerTypeURL)
 	require.NoError(t, err)
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		serializedKey, e := proto.Marshal(NewRandomSecp256K1PrivateKey(testParams[i].hashType, testParams[i].curve))
 		require.NoError(t, e)
 
@@ -54,7 +54,7 @@ func TestECDSASecp256K1SignGetPrimitiveWithInvalidInput(t *testing.T) {
 	km, err := registry.GetKeyManager(secp256k1SignerTypeURL)
 	require.NoError(t, err)
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		serializedKey, e := proto.Marshal(NewRandomSecp256K1PrivateKey(testParams[i].hashType, testParams[i].curve))
 		if testParams[i].curve != secp256k1pb.BitcoinCurveType_INVALID_BITCOIN_CURVE {
 			require.NoError(t, e)
@@ -88,7 +88,7 @@ func TestECDSASecp256K1SignNewKeyBasic(t *testing.T) {
 	km, err := registry.GetKeyManager(secp256k1SignerTypeURL)
 	require.NoError(t, err)
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		params := NewSecp256K1Params(testParams[i].hashType, testParams[i].curve,
 			secp256k1pb.Secp256K1SignatureEncoding_Bitcoin_DER)
 
@@ -112,7 +112,7 @@ func TestECDSASecp256K1SignNewKeyWithInvalidInput(t *testing.T) {
 
 	// invalid hash and curve type
 	testParams := genInvalidSecp256k1Params()
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		params := NewSecp256K1Params(testParams[i].hashType, testParams[i].curve,
 			secp256k1pb.Secp256K1SignatureEncoding_Bitcoin_DER)
 
@@ -125,7 +125,7 @@ func TestECDSASecp256K1SignNewKeyWithInvalidInput(t *testing.T) {
 
 	// invalid encoding
 	testParams = genValidSecp256k1Params()
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		params := NewSecp256K1Params(testParams[i].hashType, testParams[i].curve,
 			secp256k1pb.Secp256K1SignatureEncoding_UNKNOWN_BITCOIN_ENCODING)
 
@@ -152,7 +152,7 @@ func TestECDSASecp256K1SignNewKeyMultipleTimes(t *testing.T) {
 
 	nTest := 27
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		keys := make(map[string]bool)
 		params := NewSecp256K1Params(testParams[i].hashType, testParams[i].curve,
 			secp256k1pb.Secp256K1SignatureEncoding_Bitcoin_DER)
@@ -161,7 +161,7 @@ func TestECDSASecp256K1SignNewKeyMultipleTimes(t *testing.T) {
 		serializedFormat, e := proto.Marshal(format)
 		require.NoError(t, e)
 
-		for j := 0; j < nTest; j++ {
+		for range nTest {
 			key, e := km.NewKey(serializedFormat)
 			require.NoError(t, e)
 
@@ -186,7 +186,7 @@ func TestECDSASecp256K1SignNewKeyDataBasic(t *testing.T) {
 	require.NoError(t, err)
 
 	testParams := genValidSecp256k1Params()
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		params := NewSecp256K1Params(testParams[i].hashType, testParams[i].curve,
 			secp256k1pb.Secp256K1SignatureEncoding_Bitcoin_DER)
 		serializedFormat, e := proto.Marshal(newSecp256K1KeyFormat(params))
@@ -217,7 +217,7 @@ func TestECDSASecp256K1SignNewKeyDataWithInvalidInput(t *testing.T) {
 	require.NoError(t, err)
 
 	testParams := genInvalidSecp256k1Params()
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		params := NewSecp256K1Params(testParams[i].hashType, testParams[i].curve,
 			secp256k1pb.Secp256K1SignatureEncoding_Bitcoin_DER)
 		format := newSecp256K1KeyFormat(params)
@@ -243,7 +243,7 @@ func TestPublicKeyDataBasic(t *testing.T) {
 	pkm, ok := km.(registry.PrivateKeyManager)
 	require.True(t, ok, "cannot obtain private key manager")
 
-	for i := 0; i < len(testParams); i++ {
+	for i := range testParams {
 		key := NewRandomSecp256K1PrivateKey(testParams[i].hashType, testParams[i].curve)
 		serializedKey, e := proto.Marshal(key)
 		require.NoError(t, e)

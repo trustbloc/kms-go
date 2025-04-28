@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package webkms
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -79,7 +80,7 @@ type CryptoBox struct {
 func NewCryptoBox(w kms.KeyManager) (*CryptoBox, error) {
 	lkms, ok := w.(*RemoteKMS)
 	if !ok {
-		return nil, fmt.Errorf("cannot use parameter argument as KMS")
+		return nil, errors.New("cannot use parameter argument as KMS")
 	}
 
 	return &CryptoBox{km: lkms}, nil

@@ -8,6 +8,7 @@ package localkms
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 
 	"github.com/trustbloc/kms-go/spi/kms"
@@ -48,7 +49,7 @@ func (l *storeReader) Read(p []byte) (int, error) {
 	}
 
 	if l.keysetID == "" {
-		return 0, fmt.Errorf("keysetID is not set")
+		return 0, errors.New("keysetID is not set")
 	}
 
 	var data []byte
@@ -60,7 +61,7 @@ func (l *storeReader) Read(p []byte) (int, error) {
 	if l.getMetadata {
 		metadataStorage, ok := l.storage.(kmsapi.StoreWithMetadata)
 		if !ok {
-			return 0, fmt.Errorf("requested to get 'metadata', but storage doesn't support it")
+			return 0, errors.New("requested to get 'metadata', but storage doesn't support it")
 		}
 
 		data, metadata, err = metadataStorage.GetWithMetadata(l.keysetID)

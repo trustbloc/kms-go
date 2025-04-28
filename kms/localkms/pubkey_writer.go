@@ -10,6 +10,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"io"
 	"math/big"
@@ -85,7 +86,7 @@ func (p *PubKeyWriter) Write(keyset *tinkpb.Keyset) error {
 
 // WriteEncrypted writes the encrypted keyset to the underlying w.Writer.
 func (p *PubKeyWriter) WriteEncrypted(keyset *tinkpb.EncryptedKeyset) error {
-	return fmt.Errorf("write encrypted function not supported")
+	return errors.New("write encrypted function not supported")
 }
 
 func write(w io.Writer, msg *tinkpb.Keyset) (kms.KeyType, error) {
@@ -126,7 +127,7 @@ func write(w io.Writer, msg *tinkpb.Keyset) (kms.KeyType, error) {
 	}
 
 	if !created {
-		return "", fmt.Errorf("key not written")
+		return "", errors.New("key not written")
 	}
 
 	return kt, nil
@@ -225,7 +226,7 @@ func getMarshalledECDSAKeyValueFromProto(pubKeyProto *ecdsapb.EcdsaPublicKey) ([
 
 	curve := subtle.GetCurve(curveName)
 	if curve == nil {
-		return nil, "", fmt.Errorf("undefined curve")
+		return nil, "", errors.New("undefined curve")
 	}
 
 	pubKey := ecdsa.PublicKey{
@@ -266,7 +267,7 @@ func getMarshalledSecp256K1KeyValueFromProto(pkPB *secp256k1pb.Secp256K1PublicKe
 
 	curve := secp256k1subtle.GetCurve(curveName)
 	if curve == nil {
-		return nil, "", fmt.Errorf("undefined curve")
+		return nil, "", errors.New("undefined curve")
 	}
 
 	pubKey := ecdsa.PublicKey{

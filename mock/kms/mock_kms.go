@@ -7,7 +7,7 @@
 package kms
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/google/tink/go/keyset"
@@ -121,7 +121,7 @@ func createMockKeyHandle(ks *tinkpb.Keyset) (*keyset.Handle, error) {
 	primaryKey := ks.Key[0]
 
 	if primaryKey.OutputPrefixType == tinkpb.OutputPrefixType_RAW {
-		return nil, fmt.Errorf("expect a non-raw key")
+		return nil, errors.New("expect a non-raw key")
 	}
 
 	return testkeyset.NewHandle(ks)

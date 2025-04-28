@@ -40,8 +40,8 @@ const (
 
 // common errors.
 var (
-	errInvalidAESCBCHMACAEADKey       = fmt.Errorf("aes_cbc_hmac_aead_key_manager: invalid key")
-	errInvalidAESCBCHMACAEADKeyFormat = fmt.Errorf("aes_cbc_hmac_aead_key_manager: invalid key format")
+	errInvalidAESCBCHMACAEADKey       = errors.New("aes_cbc_hmac_aead_key_manager: invalid key")
+	errInvalidAESCBCHMACAEADKeyFormat = errors.New("aes_cbc_hmac_aead_key_manager: invalid key format")
 	maxTagSize                        = map[commonpb.HashType]uint32{ //nolint:gochecknoglobals
 		commonpb.HashType_SHA1:   maxTagSizeSHA1,
 		commonpb.HashType_SHA224: maxTagSizeSHA224,

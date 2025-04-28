@@ -8,7 +8,6 @@ package local
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -48,7 +47,7 @@ func MasterKeyFromPath(path string) (io.Reader, error) {
 func MasterKeyFromEnv(envPrefix, keyURI string) (io.Reader, error) {
 	mk := os.Getenv(envPrefix + strings.ReplaceAll(keyURI, "/", "_"))
 	if mk == "" {
-		return nil, fmt.Errorf("masterKey not set")
+		return nil, errors.New("masterKey not set")
 	}
 
 	return bytes.NewReader([]byte(mk)), nil

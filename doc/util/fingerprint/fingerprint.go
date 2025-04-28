@@ -58,7 +58,7 @@ func CreateDIDKey(pubKey []byte) (string, string) {
 // kmsdidkey.BuildDIDKeyByKeyType() for marshalled keys extracted from the KMS instead of this function.
 func CreateDIDKeyByCode(code uint64, pubKey []byte) (string, string) {
 	methodID := KeyFingerprint(code, pubKey)
-	didKey := fmt.Sprintf("did:key:%s", methodID)
+	didKey := fmt.Sprintf("did:key:%s", methodID) //nolint:perfsprint
 	keyID := fmt.Sprintf("%s#%s", didKey, methodID)
 
 	return didKey, keyID
@@ -68,7 +68,7 @@ func CreateDIDKeyByCode(code uint64, pubKey []byte) (string, string) {
 // https://w3c-ccg.github.io/did-method-key/#format.
 func CreateDIDKeyByJwk(jsonWebKey *jwk.JWK) (string, string, error) { //nolint:gocyclo
 	if jsonWebKey == nil {
-		return "", "", fmt.Errorf("jsonWebKey is required")
+		return "", "", errors.New("jsonWebKey is required")
 	}
 
 	switch jsonWebKey.Kty {
@@ -156,7 +156,7 @@ func KeyFingerprint(code uint64, pubKeyValue []byte) string {
 	copy(buf, multicodecValue)
 	copy(buf[mcLength:], pubKeyValue)
 
-	return fmt.Sprintf("z%s", base58.Encode(buf))
+	return fmt.Sprintf("z%s", base58.Encode(buf)) //nolint:perfsprint
 }
 
 func multicodec(code uint64) []byte {

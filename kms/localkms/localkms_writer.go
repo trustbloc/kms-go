@@ -66,7 +66,7 @@ func (l *storeWriter) Write(p []byte) (int, error) {
 	if len(l.metadata) != 0 {
 		metadataStorage, ok := l.storage.(kmsapi.StoreWithMetadata)
 		if !ok {
-			return 0, fmt.Errorf("requested to save 'metadata', but storage doesn't support it")
+			return 0, errors.New("requested to save 'metadata', but storage doesn't support it")
 		}
 
 		err = metadataStorage.PutWithMetadata(ksID, p, l.metadata)

@@ -23,7 +23,7 @@ func TestNewAESCBCHMAC(t *testing.T) {
 	key := make([]byte, 64)
 
 	// Test various key sizes.
-	for i := 0; i < 64; i++ {
+	for i := range 64 {
 		k := key[:i]
 		keySize := len(k)
 

@@ -82,7 +82,7 @@ type JWEEncrypt struct {
 func NewJWEEncrypt(encAlg EncAlg, envelopMediaType, cty, senderKID string, senderKH *keyset.Handle,
 	recipientsPubKeys []*cryptoapi.PublicKey, crypto cryptoapi.Crypto) (*JWEEncrypt, error) {
 	if len(recipientsPubKeys) == 0 {
-		return nil, fmt.Errorf("empty recipientsPubKeys list")
+		return nil, errors.New("empty recipientsPubKeys list")
 	}
 
 	switch encAlg {
@@ -585,11 +585,11 @@ func (je *JWEEncrypt) newCEK() []byte {
 
 func (je *JWEEncrypt) buildAPUAPV() ([]byte, []byte, error) {
 	if je.skid == "" {
-		return nil, nil, fmt.Errorf("cannot create APU/APV with empty sender skid")
+		return nil, nil, errors.New("cannot create APU/APV with empty sender skid")
 	}
 
 	if len(je.recipientsKeys) == 0 {
-		return nil, nil, fmt.Errorf("cannot create APU/APV with empty recipient keys")
+		return nil, nil, errors.New("cannot create APU/APV with empty recipient keys")
 	}
 
 	var recKIDs []string

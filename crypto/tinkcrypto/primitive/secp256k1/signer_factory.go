@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 package secp256k1
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/tink/go/core/primitiveset"
@@ -42,13 +43,13 @@ var _ tink.Signer = (*wrappedSigner)(nil)
 
 func newWrappedSigner(ps *primitiveset.PrimitiveSet) (*wrappedSigner, error) {
 	if _, ok := (ps.Primary.Primitive).(tink.Signer); !ok {
-		return nil, fmt.Errorf("public_key_sign_factory: not a Signer primitive")
+		return nil, errors.New("public_key_sign_factory: not a Signer primitive")
 	}
 
 	for _, primitives := range ps.Entries {
 		for _, p := range primitives {
 			if _, ok := (p.Primitive).(tink.Signer); !ok {
-				return nil, fmt.Errorf("public_key_sign_factory: not an Signer primitive")
+				return nil, errors.New("public_key_sign_factory: not an Signer primitive")
 			}
 		}
 	}
@@ -66,7 +67,7 @@ func (s *wrappedSigner) Sign(data []byte) ([]byte, error) {
 
 	signer, ok := (primary.Primitive).(tink.Signer)
 	if !ok {
-		return nil, fmt.Errorf("public_key_sign_factory: not a Signer primitive")
+		return nil, errors.New("public_key_sign_factory: not a Signer primitive")
 	}
 
 	var signedData []byte
